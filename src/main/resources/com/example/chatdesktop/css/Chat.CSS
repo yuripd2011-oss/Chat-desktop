@@ -1,0 +1,160 @@
+/* =========================================================
+   TEMA "HOMEM-ARANHA" — vermelho e azul, com teia sutil
+   ========================================================= */
+
+.root {
+    -spider-red: #e0212b;
+    -spider-red-dark: #a1141c;
+    -spider-blue: #0d3a8f;
+    -spider-blue-dark: #071f4d;
+    -bg-dark: #0b0e14;
+    -bg-panel: #141926;
+
+    /* fundo com "teia" simulada por linhas cruzadas bem sutis */
+    -fx-background-color:
+            linear-gradient(from 0% 0% to 6% 6%, rgba(224,33,43,0.05) 0%, transparent 40%),
+            linear-gradient(from 100% 0% to 94% 6%, rgba(13,58,143,0.06) 0%, transparent 40%),
+            #0b0e14;
+    -fx-font-family: "Segoe UI", sans-serif;
+}
+
+/* ================= TOPO ================= */
+
+.topo {
+    -fx-background-color: -bg-panel;
+    -fx-border-color: transparent transparent -spider-red transparent;
+    -fx-border-width: 0 0 3 0;
+}
+
+.icone-topo {
+    -fx-font-size: 30px;
+    -fx-text-fill: -spider-red;
+    -fx-effect: dropshadow(gaussian, rgba(224,33,43,0.6), 8, 0.3, 0, 0);
+}
+
+.titulo {
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+    -fx-text-fill: white;
+}
+
+.subtitulo {
+    -fx-font-size: 11px;
+    -fx-text-fill: #8891a5;
+    -fx-font-style: italic;
+}
+
+.status-conectado {
+    -fx-font-size: 12px;
+    -fx-text-fill: #2ecc71;
+    -fx-font-weight: bold;
+}
+
+.status-pensando {
+    -fx-font-size: 12px;
+    -fx-text-fill: -spider-red;
+    -fx-font-weight: bold;
+}
+
+/* ================= ÁREA DE MENSAGENS ================= */
+
+.area-mensagens {
+    -fx-background: transparent;
+    -fx-background-color: transparent;
+}
+
+.area-mensagens .viewport {
+    -fx-background-color: transparent;
+}
+
+/* ================= BOLHAS DE MENSAGEM ================= */
+
+.avatar {
+    -fx-font-size: 18px;
+    -fx-min-width: 34px;
+    -fx-min-height: 34px;
+    -fx-max-width: 34px;
+    -fx-max-height: 34px;
+    -fx-alignment: center;
+    -fx-background-radius: 50%;
+    -fx-border-radius: 50%;
+}
+
+.avatar-usuario {
+    -fx-background-color: linear-gradient(to bottom right, -spider-blue, -spider-blue-dark);
+    -fx-text-fill: white;
+    -fx-border-color: #274a8f;
+    -fx-border-width: 1.5;
+}
+
+.avatar-assistente {
+    -fx-background-color: linear-gradient(to bottom right, -spider-red, -spider-red-dark);
+    -fx-text-fill: white;
+    -fx-border-color: #ff4d4d;
+    -fx-border-width: 1.5;
+}
+
+.bolha-usuario {
+    -fx-background-color: linear-gradient(to bottom right, -spider-blue, -spider-blue-dark);
+    -fx-text-fill: white;
+    -fx-background-radius: 16 16 4 16;
+    -fx-font-size: 14px;
+    -fx-effect: dropshadow(gaussian, rgba(13,58,143,0.35), 10, 0.2, 0, 2);
+}
+
+.bolha-assistente {
+    -fx-background-color: -bg-panel;
+    -fx-text-fill: #e5e7eb;
+    -fx-background-radius: 16 16 16 4;
+    -fx-border-color: -spider-red;
+    -fx-border-width: 0 0 0 3;
+    -fx-border-radius: 16 16 16 4;
+    -fx-font-size: 14px;
+    -fx-effect: dropshadow(gaussian, rgba(224,33,43,0.25), 10, 0.2, 0, 2);
+}
+
+.horario {
+    -fx-font-size: 10px;
+    -fx-text-fill: #626b80;
+    -fx-padding: 2 6 0 6;
+}
+
+/* ================= ENTRADA DE TEXTO ================= */
+
+.rodape {
+    -fx-background-color: -bg-panel;
+    -fx-border-color: -spider-red transparent transparent transparent;
+    -fx-border-width: 2 0 0 0;
+}
+
+.campo-mensagem {
+    -fx-background-color: #1b1e27;
+    -fx-text-fill: white;
+    -fx-prompt-text-fill: #717784;
+    -fx-background-radius: 14;
+    -fx-border-radius: 14;
+    -fx-border-color: #303440;
+    -fx-padding: 12 15;
+    -fx-font-size: 14px;
+}
+
+.campo-mensagem:focused {
+    -fx-border-color: -spider-red;
+}
+
+.botao-enviar {
+    -fx-background-color: linear-gradient(to right, -spider-red, -spider-blue);
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-background-radius: 12;
+    -fx-padding: 12 22;
+    -fx-cursor: hand;
+}
+
+.botao-enviar:hover {
+    -fx-background-color: linear-gradient(to right, -spider-red-dark, -spider-blue-dark);
+}
+
+.botao-enviar:disabled {
+    -fx-opacity: 0.5;
+}
