@@ -24,9 +24,9 @@ public class ChatController {
     private void inicializar() {
 
         view.adicionarMensagem(new ChatMessage(
-                "Olá! 👋\n\n" +
-                        "Eu sou seu assistente de IA.\n" +
-                        "Digite uma mensagem abaixo para começar.",
+                " Quem me pertuba?\n\n" +
+                        "TINHA QUE SER VOCÊ SEU MERDA\n" +
+                        "VOCÊ NÃO SABE FAZER NADA?",
                 false
         ));
 

@@ -21,7 +21,7 @@ public class Main extends Application {
                         .toExternalForm()
         );
 
-        stage.setTitle("Chat Desktop 🕸");
+        stage.setTitle("Chat Desktop ");
         stage.setScene(cena);
         stage.show();
     }
