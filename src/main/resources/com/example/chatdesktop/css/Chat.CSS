@@ -1,136 +1,184 @@
 /* =========================================================
-   TEMA HELLO KITTY — RED EDITION
-   Vermelho / Preto / Branco
+   TEMA PRETO E BRANCO CROMÁTICO
    ========================================================= */
 
 .root {
-    /* ===== PALETA ===== */
-    -kitty-red: #e60012;
-    -kitty-red-dark: #a8000d;
-    -kitty-red-light: #ff3344;
-    -kitty-red-soft: #ffe5e8;
-
-    -kitty-black: #111111;
-    -kitty-black-soft: #1c1c1c;
-
-    -kitty-white: #ffffff;
-    -kitty-gray: #f5f5f5;
-
-    /* Rosa apenas como detalhe */
-    -kitty-pink: #ff8fa3;
-
-    /*
-     * BACKGROUND
-     *
-     * Vermelho dominante com preto e branco.
-     * Inspirado nos círculos vermelhos da imagem.
-     */
-    -fx-background-color:
-            radial-gradient(
-                    center 10% 10%,
-                    radius 45%,
-                    rgba(230, 0, 18, 0.22) 0%,
-                    transparent 70%
-            ),
-            radial-gradient(
-                    center 90% 90%,
-                    radius 45%,
-                    rgba(168, 0, 13, 0.18) 0%,
-                    transparent 70%
-            ),
-            linear-gradient(
-                    to bottom right,
-                    #fffafa 0%,
-                    #fff5f5 45%,
-                    #ffe9eb 100%
-            );
-
+    -fx-background-color: linear-gradient(to bottom, #181818, #080808);
     -fx-font-family: "Segoe UI", sans-serif;
 }
+
 
 /* =========================================================
    TOPO
    ========================================================= */
 
 .topo {
-    -fx-background-color:
-            linear-gradient(
-                    to right,
-                    #111111,
-                    #1c1c1c,
-                    #111111
-            );
+    -fx-background-color: linear-gradient(to right, #202020, #111111);
 
     -fx-border-color:
-            transparent transparent -kitty-red transparent;
+            transparent
+            transparent
+            #ffffff
+            transparent;
 
-    -fx-border-width: 0 0 4 0;
-
-    -fx-effect:
-            dropshadow(
-                    gaussian,
-                    rgba(230, 0, 18, 0.45),
-                    14,
-                    0.25,
-                    0,
-                    2
-            );
-}
-
-.icone-topo {
-    -fx-font-size: 30px;
-    -fx-text-fill: -kitty-red;
-
-    -fx-effect:
-            dropshadow(
-                    gaussian,
-                    rgba(230, 0, 18, 0.75),
-                    10,
-                    0.35,
-                    0,
-                    0
-            );
+    -fx-border-width: 0 0 2 0;
 }
 
 .titulo {
     -fx-font-size: 20px;
     -fx-font-weight: bold;
-    -fx-text-fill: white;
+    -fx-text-fill: #ffffff;
 }
 
 .subtitulo {
     -fx-font-size: 11px;
-    -fx-text-fill: #bbbbbb;
+    -fx-text-fill: #a6a6a6;
     -fx-font-style: italic;
 }
 
 .status-conectado {
     -fx-font-size: 12px;
-    -fx-text-fill: #38c172;
+    -fx-text-fill: #ffffff;
     -fx-font-weight: bold;
 }
 
 .status-pensando {
     -fx-font-size: 12px;
-    -fx-text-fill: #ff3344;
+    -fx-text-fill: #d0d0d0;
     -fx-font-weight: bold;
+}
+
+
+/* =========================================================
+   NOVA CONVERSA
+   ========================================================= */
+
+.botao-nova-conversa {
+    -fx-background-color:
+            linear-gradient(to right, #ffffff, #bdbdbd);
+
+    -fx-text-fill: #000000;
+
+    -fx-font-weight: bold;
+
+    -fx-font-size: 12px;
+
+    -fx-background-radius: 20;
+
+    -fx-border-color: transparent;
+
+    -fx-padding: 10 20;
+
+    -fx-cursor: hand;
 
     -fx-effect:
             dropshadow(
                     gaussian,
-                    rgba(230, 0, 18, 0.6),
-                    8,
+                    rgba(255,255,255,0.25),
+                    12,
                     0.3,
                     0,
-                    0
+                    2
             );
 }
+
+.botao-nova-conversa:hover {
+    -fx-background-color:
+            linear-gradient(to right, #ffffff, #e5e5e5);
+
+    -fx-effect:
+            dropshadow(
+                    gaussian,
+                    rgba(255,255,255,0.45),
+                    16,
+                    0.4,
+                    0,
+                    3
+            );
+}
+
+
+/* =========================================================
+   BARRA LATERAL
+   ========================================================= */
+
+.barra-lateral {
+    -fx-background-color:
+            linear-gradient(to bottom, #181818, #0d0d0d);
+
+    -fx-border-color:
+            transparent
+            #383838
+            transparent
+            transparent;
+
+    -fx-border-width: 0 1 0 0;
+}
+
+.titulo-historico {
+    -fx-font-size: 13px;
+
+    -fx-font-weight: bold;
+
+    -fx-text-fill: #ffffff;
+
+    -fx-padding: 0 0 6 4;
+}
+
+.area-historico {
+    -fx-background: transparent;
+    -fx-background-color: transparent;
+}
+
+.area-historico .viewport {
+    -fx-background-color: transparent;
+}
+
+.item-historico {
+    -fx-background-color:
+            linear-gradient(
+                    to bottom right,
+                    #111111,
+                    #292929
+            );
+
+    -fx-text-fill: #eeeeee;
+
+    -fx-font-size: 12px;
+
+    -fx-background-radius: 8;
+
+    -fx-border-color: #444444;
+
+    -fx-border-radius: 8;
+
+    -fx-border-width: 1;
+
+    -fx-alignment: center-left;
+
+    -fx-padding: 10 12;
+
+    -fx-cursor: hand;
+}
+
+.item-historico:hover {
+    -fx-background-color:
+            linear-gradient(
+                    to bottom right,
+                    #222222,
+                    #3a3a3a
+            );
+
+    -fx-border-color: #ffffff;
+}
+
 
 /* =========================================================
    ÁREA DE MENSAGENS
    ========================================================= */
 
 .area-mensagens {
+    -fx-background: transparent;
     -fx-background-color: transparent;
 }
 
@@ -138,18 +186,6 @@
     -fx-background-color: transparent;
 }
 
-.area-mensagens .scroll-bar:vertical {
-    -fx-background-color: transparent;
-}
-
-.area-mensagens .scroll-bar:vertical .thumb {
-    -fx-background-color: #e60012;
-    -fx-background-radius: 10;
-}
-
-.area-mensagens .scroll-bar:vertical .thumb:hover {
-    -fx-background-color: #a8000d;
-}
 
 /* =========================================================
    AVATARES
@@ -160,140 +196,216 @@
 
     -fx-min-width: 34px;
     -fx-min-height: 34px;
+
     -fx-max-width: 34px;
     -fx-max-height: 34px;
 
     -fx-alignment: center;
 
     -fx-background-radius: 50%;
+
     -fx-border-radius: 50%;
 }
-
-/* Usuário */
 
 .avatar-usuario {
     -fx-background-color:
             linear-gradient(
                     to bottom right,
-                    #e60012,
-                    #a8000d
+                    #ffffff,
+                    #a8a8a8
             );
 
-    -fx-text-fill: white;
+    -fx-text-fill: #000000;
 
-    -fx-border-color: #ff3344;
+    -fx-border-color: #ffffff;
+
     -fx-border-width: 1.5;
-
-    -fx-effect:
-            dropshadow(
-                    gaussian,
-                    rgba(230, 0, 18, 0.5),
-                    9,
-                    0.3,
-                    0,
-                    0
-            );
 }
-
-/* Assistente */
 
 .avatar-assistente {
     -fx-background-color:
             linear-gradient(
                     to bottom right,
-                    #ffffff,
-                    #eeeeee
+                    #333333,
+                    #111111
             );
 
-    -fx-text-fill: -kitty-red;
+    -fx-text-fill: #ffffff;
 
-    -fx-border-color: -kitty-red;
-    -fx-border-width: 2;
+    -fx-border-color: #ffffff;
 
-    -fx-effect:
-            dropshadow(
-                    gaussian,
-                    rgba(230, 0, 18, 0.4),
-                    9,
-                    0.3,
-                    0,
-                    0
-            );
+    -fx-border-width: 1.5;
 }
 
-/* =========================================================
-   BOLHAS DE MENSAGEM
-   ========================================================= */
 
-/* Usuário — VERMELHO */
+/* =========================================================
+   BOLHA DO USUÁRIO
+   ========================================================= */
 
 .bolha-usuario {
     -fx-background-color:
             linear-gradient(
                     to bottom right,
-                    #e60012,
-                    #b5000e
+                    #ffffff,
+                    #cfcfcf
             );
 
-    -fx-text-fill: white;
+    -fx-text-fill: #000000;
 
-    -fx-background-radius: 18 18 5 18;
+    -fx-background-radius: 16 16 4 16;
 
     -fx-font-size: 14px;
 
     -fx-effect:
             dropshadow(
                     gaussian,
-                    rgba(168, 0, 13, 0.35),
-                    11,
-                    0.25,
+                    rgba(255,255,255,0.18),
+                    10,
+                    0.2,
                     0,
-                    3
+                    2
             );
 }
 
-/* Assistente — BRANCO */
 
+/* =========================================================
+   BOLHA DO ASSISTENTE
+   ========================================================= */
+
+/*
+ * Agora a própria StackPane é a bolha.
+ *
+ * O texto e o botão ficam dentro dela.
+ */
 .bolha-assistente {
     -fx-background-color:
             linear-gradient(
                     to bottom right,
-                    #ffffff,
-                    #fff8f8
+                    #242424,
+                    #121212
             );
 
-    -fx-text-fill: #171717;
+    -fx-background-radius:
+            16 16 16 4;
 
-    -fx-background-radius: 18 18 18 5;
+    -fx-border-color: #777777;
 
-    /*
-     * Barra vermelha lateral
-     */
-    -fx-border-color: -kitty-red;
-    -fx-border-width: 0 0 0 4;
-    -fx-border-radius: 18 18 18 5;
+    -fx-border-width: 0 0 0 3;
 
-    -fx-font-size: 14px;
+    -fx-border-radius:
+            16 16 16 4;
 
     -fx-effect:
             dropshadow(
                     gaussian,
-                    rgba(230, 0, 18, 0.22),
-                    11,
+                    rgba(0,0,0,0.7),
+                    10,
                     0.2,
                     0,
-                    3
+                    2
             );
 }
 
+
+/* =========================================================
+   TEXTO DO ASSISTENTE
+   ========================================================= */
+
+.texto-assistente {
+    -fx-text-fill: #eeeeee;
+
+    -fx-font-size: 14px;
+
+    -fx-background-color: transparent;
+
+    -fx-wrap-text: true;
+}
+
+
+/* =========================================================
+   HORÁRIO
+   ========================================================= */
+
 .horario {
     -fx-font-size: 10px;
+
     -fx-text-fill: #888888;
+
     -fx-padding: 2 6 0 6;
 }
 
+
 /* =========================================================
-   RODAPÉ
+   BOTÃO DE COPIAR
+   ========================================================= */
+
+/*
+ * Pequeno e discreto.
+ *
+ * O Java também define 24x24.
+ */
+.botao-copiar {
+    -fx-background-color: transparent;
+
+    -fx-border-color: transparent;
+
+    -fx-border-width: 0;
+
+    -fx-background-insets: 0;
+
+    -fx-border-insets: 0;
+
+    -fx-padding: 0;
+
+    -fx-min-width: 24px;
+
+    -fx-min-height: 24px;
+
+    -fx-pref-width: 24px;
+
+    -fx-pref-height: 24px;
+
+    -fx-max-width: 24px;
+
+    -fx-max-height: 24px;
+
+    -fx-background-radius: 6px;
+
+    -fx-border-radius: 6px;
+
+    -fx-cursor: hand;
+}
+
+
+/*
+ * Quando passa o mouse.
+ */
+.botao-copiar:hover {
+    -fx-background-color:
+            rgba(255, 255, 255, 0.08);
+}
+
+
+/*
+ * Quando aperta.
+ */
+.botao-copiar:pressed {
+    -fx-background-color:
+            rgba(255, 255, 255, 0.14);
+}
+
+
+/*
+ * Depois de copiar.
+ */
+.botao-copiar.copiado {
+    -fx-background-color:
+            rgba(255, 255, 255, 0.08);
+}
+
+
+/* =========================================================
+   RODAPÉ / ENTRADA
    ========================================================= */
 
 .rodape {
@@ -301,66 +413,47 @@
             linear-gradient(
                     to right,
                     #111111,
-                    #1c1c1c,
-                    #111111
+                    #1d1d1d
             );
 
     -fx-border-color:
-            -kitty-red transparent transparent transparent;
+            #555555
+            transparent
+            transparent
+            transparent;
 
-    -fx-border-width: 3 0 0 0;
-
-    -fx-effect:
-            dropshadow(
-                    gaussian,
-                    rgba(230, 0, 18, 0.35),
-                    12,
-                    0.2,
-                    0,
-                    -2
-            );
+    -fx-border-width: 2 0 0 0;
 }
 
+
 /* =========================================================
-   CAMPO DE TEXTO
+   CAMPO DE MENSAGEM
    ========================================================= */
 
 .campo-mensagem {
-    -fx-background-color:
-            #ffffff;
+    -fx-background-color: #252525;
 
-    -fx-text-fill: #171717;
+    -fx-text-fill: #ffffff;
 
-    -fx-prompt-text-fill: #999999;
+    -fx-prompt-text-fill: #888888;
 
-    -fx-background-radius: 15;
-    -fx-border-radius: 15;
+    -fx-background-radius: 14;
 
-    -fx-border-color: #d40012;
-    -fx-border-width: 2;
+    -fx-border-radius: 14;
+
+    -fx-border-color: #444444;
 
     -fx-padding: 12 15;
 
     -fx-font-size: 14px;
 }
 
-.campo-mensagem:hover {
-    -fx-border-color: -kitty-red;
-}
-
 .campo-mensagem:focused {
-    -fx-border-color: #e60012;
+    -fx-border-color: #ffffff;
 
-    -fx-effect:
-            dropshadow(
-                    gaussian,
-                    rgba(230, 0, 18, 0.4),
-                    10,
-                    0.3,
-                    0,
-                    0
-            );
+    -fx-background-color: #1c1c1c;
 }
+
 
 /* =========================================================
    BOTÃO ENVIAR
@@ -370,110 +463,30 @@
     -fx-background-color:
             linear-gradient(
                     to right,
-                    #e60012,
-                    #b5000e
+                    #ffffff,
+                    #cfcfcf
             );
 
-    -fx-text-fill: white;
+    -fx-text-fill: #000000;
 
     -fx-font-weight: bold;
 
-    -fx-background-radius: 13;
+    -fx-background-radius: 12;
 
     -fx-padding: 12 22;
 
     -fx-cursor: hand;
-
-    -fx-effect:
-            dropshadow(
-                    gaussian,
-                    rgba(230, 0, 18, 0.45),
-                    11,
-                    0.3,
-                    0,
-                    2
-            );
 }
 
 .botao-enviar:hover {
     -fx-background-color:
             linear-gradient(
                     to right,
-                    #ff1a2d,
-                    #e60012
-            );
-
-    -fx-effect:
-            dropshadow(
-                    gaussian,
-                    rgba(230, 0, 18, 0.75),
-                    15,
-                    0.35,
-                    0,
-                    2
-            );
-}
-
-.botao-enviar:pressed {
-    -fx-background-color:
-            linear-gradient(
-                    to right,
-                    #a8000d,
-                    #780009
+                    #ffffff,
+                    #999999
             );
 }
 
 .botao-enviar:disabled {
-    -fx-opacity: 0.45;
-}
-
-/* =========================================================
-   DETALHES HELLO KITTY
-   ========================================================= */
-
-.hello-kitty-decoracao {
-    -fx-background-color:
-            radial-gradient(
-                    center 50% 50%,
-                    radius 70%,
-                    rgba(230, 0, 18, 0.35),
-                    rgba(255, 51, 68, 0.12),
-                    transparent
-            );
-
-    -fx-effect:
-            dropshadow(
-                    gaussian,
-                    rgba(230, 0, 18, 0.5),
-                    20,
-                    0.35,
-                    0,
-                    0
-            );
-}
-
-/* Destaques vermelhos */
-
-.destaque-kitty {
-    -fx-text-fill: -kitty-red;
-
-    -fx-font-weight: bold;
-
-    -fx-effect:
-            dropshadow(
-                    gaussian,
-                    rgba(230, 0, 18, 0.45),
-                    8,
-                    0.3,
-                    0,
-                    0
-            );
-}
-
-/* Pequenos detalhes rosa — usar com moderação */
-
-.fofo-kitty {
-    -fx-text-fill: -kitty-pink;
-
-    -fx-font-weight: bold;
+    -fx-opacity: 0.5;
 }
