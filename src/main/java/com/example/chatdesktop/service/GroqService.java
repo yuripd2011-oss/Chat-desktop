@@ -4,14 +4,20 @@ import com.example.chatdesktop.config.ConfigLoader;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import java.net.ConnectException;
 import java.net.URI;
+import java.net.UnknownHostException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.net.http.HttpTimeoutException;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 
 /**
- * Encapsula toda a comunicação com a API da Groq.
+ * Encapsula toda a comunicação com a API da Groq, com mensagens de
+ * erro amigáveis para os problemas mais comuns (sem internet, chave
+ * inválida, limite de uso, falha de comunicação).
  */
 public class GroqService {
 
@@ -20,7 +26,10 @@ public class GroqService {
 
     private static final String MODELO = "openai/gpt-oss-20b";
 
-    private final HttpClient httpClient = HttpClient.newHttpClient();
+    private final HttpClient httpClient = HttpClient.newBuilder()
+            .connectTimeout(Duration.ofSeconds(10))
+            .build();
+
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     private final String apiKey;
@@ -72,6 +81,7 @@ public class GroqService {
 
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(GROQ_URL))
+                    .timeout(Duration.ofSeconds(30))
                     .header("Authorization", "Bearer " + apiKey)
                     .header("Content-Type", "application/json")
                     .POST(HttpRequest.BodyPublishers.ofString(json, StandardCharsets.UTF_8))
@@ -82,40 +92,83 @@ public class GroqService {
                     HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8)
             );
 
-            if (response.statusCode() != 200) {
-                return "❌ Erro da Groq.\n\n" +
-                        "Código HTTP: " + response.statusCode() +
-                        "\n\n" + response.body();
-            }
+            return tratarResposta(response);
 
-            JsonNode raiz = objectMapper.readTree(response.body());
-            JsonNode choices = raiz.path("choices");
+        } catch (UnknownHostException | ConnectException e) {
 
-            if (choices.isEmpty()) {
-                return "❌ A Groq não retornou uma resposta.";
-            }
+            return """
+                    📡 Sem conexão com a internet.
 
-            return choices
-                    .get(0)
-                    .path("message")
-                    .path("content")
-                    .asText();
+                    Verifique sua rede e tente novamente.
+                    """;
+
+        } catch (HttpTimeoutException e) {
+
+            return """
+                    ⏱️ A Groq demorou demais para responder.
+
+                    Tente novamente em alguns instantes.
+                    """;
 
         } catch (Exception e) {
 
             return """
-                    ❌ Não foi possível conectar à Groq.
+                    ❌ Falha de comunicação com a Groq.
 
-                    Verifique:
-
-                    • Sua conexão com a Internet
-                    • Sua GROQ_API_KEY
-                    • Se a API da Groq está disponível
-
-                    Erro:
-
-                    %s
+                    Detalhe técnico: %s
                     """.formatted(e.getMessage());
         }
+    }
+
+    private String tratarResposta(HttpResponse<String> response) throws Exception {
+
+        int status = response.statusCode();
+
+        if (status == 401) {
+            return """
+                    🔑 Chave da API inválida.
+
+                    Confira o valor de "groq.api.key" no config.properties
+                    e gere uma nova chave em console.groq.com, se necessário.
+                    """;
+        }
+
+        if (status == 429) {
+            return """
+                    🚦 Limite de uso da API atingido.
+
+                    Você fez requisições demais em pouco tempo.
+                    Aguarde um instante antes de tentar de novo.
+                    """;
+        }
+
+        if (status >= 500) {
+            return """
+                    🛠️ A Groq está com instabilidade no momento (erro %d).
+
+                    Tente novamente em alguns minutos.
+                    """.formatted(status);
+        }
+
+        if (status != 200) {
+            return """
+                    ❌ Erro inesperado da Groq (código %d).
+
+                    %s
+                    """.formatted(status, response.body());
+        }
+
+        JsonNode raiz = objectMapper.readTree(response.body());
+        JsonNode choices = raiz.path("choices");
+
+        if (choices.isEmpty()) {
+            return "❌ A Groq não retornou uma resposta.";
+        }
+
+        return choices
+                .get(0)
+                .path("message")
+                .path("content")
+                .asText();
     }
 }

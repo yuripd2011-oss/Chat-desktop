@@ -10,7 +10,8 @@ import java.util.List;
 
 /**
  * Faz a ponte entre a View (interface) e o Service (Groq).
- * Contém a lógica de interação do chat, incluindo o histórico de conversas.
+ * Contém a lógica de interação do chat, incluindo o histórico de conversas
+ * e o título automático de cada conversa.
  */
 public class ChatController {
 
@@ -23,7 +24,7 @@ public class ChatController {
     private final GroqService groqService;
 
     private List<ChatMessage> conversaAtual = new ArrayList<>();
-    private int contadorConversas = 1;
+    private boolean tituloJaDefinido = false;
 
     public ChatController(ChatView view) {
         this.view = view;
@@ -45,6 +46,8 @@ public class ChatController {
         ChatMessage boasVindas = new ChatMessage(MENSAGEM_BOAS_VINDAS, false);
         view.adicionarMensagem(boasVindas);
         conversaAtual.add(boasVindas);
+        view.definirTituloConversaAtual("Nova conversa");
+        tituloJaDefinido = false;
     }
 
     private void enviarMensagem() {
@@ -58,6 +61,12 @@ public class ChatController {
         ChatMessage mensagemUsuario = new ChatMessage(texto, true);
         view.adicionarMensagem(mensagemUsuario);
         conversaAtual.add(mensagemUsuario);
+
+        // título automático: gerado a partir da primeira mensagem do usuário
+        if (!tituloJaDefinido) {
+            view.definirTituloConversaAtual(resumir(mensagemUsuario));
+            tituloJaDefinido = true;
+        }
 
         view.getCampoMensagem().clear();
 
@@ -86,7 +95,7 @@ public class ChatController {
      * Salva a conversa atual no histórico (se tiver mensagens do usuário),
      * limpa a tela e começa uma conversa nova.
      */
-    private void iniciarNovaConversa() {
+    public void iniciarNovaConversa() {
 
         salvarConversaAtualNoHistorico();
 
@@ -113,21 +122,21 @@ public class ChatController {
                 .filter(ChatMessage::isDeUsuario)
                 .findFirst()
                 .map(ChatController::resumir)
-                .orElse("Conversa " + contadorConversas);
-
-        contadorConversas++;
+                .orElse("Conversa sem título");
 
         var botaoItem = view.adicionarItemHistorico(tituloItem);
-        botaoItem.setOnAction(event -> carregarConversa(conversaSalva));
+        botaoItem.setOnAction(event -> carregarConversa(conversaSalva, tituloItem));
     }
 
-    private void carregarConversa(List<ChatMessage> conversa) {
+    private void carregarConversa(List<ChatMessage> conversa, String titulo) {
 
         salvarConversaAtualNoHistorico();
 
         view.limparMensagens();
 
         conversaAtual = new ArrayList<>(conversa);
+        tituloJaDefinido = true;
+        view.definirTituloConversaAtual(titulo);
 
         for (ChatMessage mensagem : conversaAtual) {
             view.adicionarMensagem(mensagem);

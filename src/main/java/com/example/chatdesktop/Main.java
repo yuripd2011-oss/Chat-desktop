@@ -5,61 +5,83 @@ import com.example.chatdesktop.view.ChatView;
 import javafx.animation.FadeTransition;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
+import javafx.animation.ParallelTransition;
 import javafx.animation.PauseTransition;
 import javafx.animation.SequentialTransition;
 import javafx.animation.Timeline;
 import javafx.application.Application;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.event.ActionEvent;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 public class Main extends Application {
+
+    private static final String CSS_ESCURO = "/com/example/chatdesktop/css/chat-dark.css";
+    private static final String CSS_CLARO = "/com/example/chatdesktop/css/chat-light.css";
 
     @Override
     public void start(Stage stage) {
 
         ChatView view = new ChatView();
-        new ChatController(view);
-
-        // camada que cobre tudo no início, para a animação de cores
-        Region overlayCor = new Region();
-        overlayCor.setStyle("-fx-background-color: #0a0a0a;");
-
-        // imagem do meme, centralizada por cima da cor
-        ImageView imagem = carregarImagemNaverdachi();
-        imagem.setOpacity(0);
-
-        StackPane camadaTransicao = new StackPane(overlayCor, imagem);
+        ChatController controller = new ChatController(view);
 
         StackPane raizComOverlay = new StackPane();
-        raizComOverlay.getChildren().addAll(view.getRaiz(), camadaTransicao);
+        raizComOverlay.getChildren().add(view.getRaiz());
 
         Scene cena = new Scene(raizComOverlay, 1000, 700);
 
         cena.getStylesheets().add(
-                getClass().getResource("/com/example/chatdesktop/css/chat.css")
-                        .toExternalForm()
+                getClass().getResource(CSS_ESCURO).toExternalForm()
+        );
+
+        configurarAlternanciaDeTema(cena, view);
+        configurarAtalhosDeTeclado(cena, view, controller);
+
+        // toca a introdução também sempre que "Nova conversa" for clicado,
+        // além do clique já tratado pelo ChatController
+        view.getBotaoNovaConversa().addEventHandler(
+                ActionEvent.ACTION,
+                event -> tocarIntroducao(raizComOverlay)
         );
 
         stage.setTitle("NeoChat");
         stage.setScene(cena);
         stage.show();
 
-        animarTransicaoInicial(raizComOverlay, camadaTransicao, overlayCor, imagem);
+        tocarIntroducao(raizComOverlay);
     }
 
     /**
-     * Tenta carregar a imagem do "naverdachi" salva pelo usuário em
-     * /com/example/chatdesktop/img/naverdachi.png. Se o arquivo não
-     * existir ainda, a animação continua normalmente sem a imagem.
+     * Cria a camada de introdução (cores + imagem do naverdachi),
+     * adiciona por cima da tela atual e dispara a animação.
      */
+    private void tocarIntroducao(StackPane container) {
+
+        Region overlayCor = new Region();
+        overlayCor.setStyle("-fx-background-color: #0a0a0a;");
+
+        ImageView imagem = carregarImagemNaverdachi();
+        imagem.setOpacity(0);
+
+        StackPane camadaTransicao = new StackPane(overlayCor, imagem);
+        container.getChildren().add(camadaTransicao);
+
+        animarTransicaoInicial(container, camadaTransicao, overlayCor, imagem);
+    }
+
     private ImageView carregarImagemNaverdachi() {
 
         ImageView imageView = new ImageView();
@@ -76,10 +98,51 @@ public class Main extends Application {
     }
 
     /**
-     * Animação de abertura: o fundo passa de PRETO para BRANCO e
-     * depois para VERMELHO; no meio do caminho a imagem do
-     * "naverdachi" aparece e some; por fim toda a camada some,
-     * revelando o app.
+     * Liga o botão de tema à troca entre o CSS escuro e o claro.
+     */
+    private void configurarAlternanciaDeTema(Scene cena, ChatView view) {
+
+        AtomicBoolean temaEscuro = new AtomicBoolean(true);
+
+        view.getBotaoTema().setOnAction(event -> {
+
+            cena.getStylesheets().clear();
+
+            if (temaEscuro.get()) {
+                cena.getStylesheets().add(getClass().getResource(CSS_CLARO).toExternalForm());
+                view.getBotaoTema().setText("☀ Tema");
+            } else {
+                cena.getStylesheets().add(getClass().getResource(CSS_ESCURO).toExternalForm());
+                view.getBotaoTema().setText("🌙 Tema");
+            }
+
+            temaEscuro.set(!temaEscuro.get());
+        });
+    }
+
+    /**
+     * Atalhos de teclado:
+     * Enter para enviar já é tratado no ChatView/ChatController.
+     * Ctrl+N: nova conversa.
+     * Ctrl+L: limpar o campo de mensagem.
+     */
+    private void configurarAtalhosDeTeclado(Scene cena, ChatView view, ChatController controller) {
+
+        cena.getAccelerators().put(
+                new KeyCodeCombination(KeyCode.N, KeyCombination.CONTROL_DOWN),
+                controller::iniciarNovaConversa
+        );
+
+        cena.getAccelerators().put(
+                new KeyCodeCombination(KeyCode.L, KeyCombination.CONTROL_DOWN),
+                () -> view.getCampoMensagem().clear()
+        );
+    }
+
+    /**
+     * Animação: o fundo passa de PRETO para BRANCO e depois para
+     * VERMELHO; no meio do caminho a imagem do "naverdachi" aparece
+     * e some; por fim toda a camada some, revelando o app.
      */
     private void animarTransicaoInicial(
             StackPane container,
@@ -110,8 +173,6 @@ public class Main extends Application {
                 new KeyFrame(Duration.seconds(2.0), new KeyValue(corAtual, vermelho))
         );
 
-        // a imagem aparece já no início (sobre o preto/branco) e
-        // some pouco antes da cor terminar de virar vermelho
         FadeTransition imagemAparece = new FadeTransition(Duration.seconds(0.5), imagem);
         imagemAparece.setFromValue(0.0);
         imagemAparece.setToValue(1.0);
@@ -135,9 +196,7 @@ public class Main extends Application {
         camadaDesaparece.setToValue(0.0);
         camadaDesaparece.setOnFinished(event -> container.getChildren().remove(camadaTransicao));
 
-        // cor de fundo e imagem tocam ao mesmo tempo,
-        // depois pausa e a camada inteira desaparece
-        var corEImagemJuntas = new javafx.animation.ParallelTransition(
+        ParallelTransition corEImagemJuntas = new ParallelTransition(
                 mudancaDeCor,
                 sequenciaImagem
         );

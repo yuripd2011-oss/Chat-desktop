@@ -1,0 +1,218 @@
+/* =========================================================
+   TEMA CLARO — mesmas classes do tema escuro, paleta invertida
+   ========================================================= */
+
+.root {
+    -fx-background-color: linear-gradient(to bottom, #ffffff, #f2f2f2);
+    -fx-font-family: "Segoe UI", sans-serif;
+}
+
+/* ================= TOPO ================= */
+
+.topo {
+    -fx-background-color: linear-gradient(to right, #ffffff, #f5f5f5);
+    -fx-border-color: transparent transparent #1a1a1a transparent;
+    -fx-border-width: 0 0 3 0;
+}
+
+.titulo {
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #1a1a1a;
+}
+
+.subtitulo {
+    -fx-font-size: 11px;
+    -fx-text-fill: #6b6b6b;
+    -fx-font-style: italic;
+}
+
+.status-conectado {
+    -fx-font-size: 12px;
+    -fx-text-fill: #1a7a3c;
+    -fx-font-weight: bold;
+}
+
+.status-pensando {
+    -fx-font-size: 12px;
+    -fx-text-fill: #1a1a1a;
+    -fx-font-weight: bold;
+}
+
+.botao-nova-conversa {
+    -fx-background-color: linear-gradient(to right, #1a1a1a, #3a3a3a);
+    -fx-text-fill: #ffffff;
+    -fx-font-weight: bold;
+    -fx-font-size: 12px;
+    -fx-background-radius: 20;
+    -fx-border-color: transparent;
+    -fx-padding: 10 20;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.25), 12, 0.3, 0, 2);
+}
+
+.botao-nova-conversa:hover {
+    -fx-background-color: linear-gradient(to right, #3a3a3a, #1a1a1a);
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.4), 16, 0.4, 0, 3);
+}
+
+.botao-tema {
+    -fx-background-color: #eeeeee;
+    -fx-text-fill: #1a1a1a;
+    -fx-background-radius: 20;
+    -fx-border-color: #cccccc;
+    -fx-border-radius: 20;
+    -fx-border-width: 1;
+    -fx-padding: 8 14;
+    -fx-cursor: hand;
+    -fx-font-size: 13px;
+}
+
+.botao-tema:hover {
+    -fx-background-color: #e0e0e0;
+}
+
+/* ================= BARRA LATERAL (HISTÓRICO) ================= */
+
+.barra-lateral {
+    -fx-background-color: linear-gradient(to bottom, #fafafa, #f0f0f0);
+    -fx-border-color: transparent #dddddd transparent transparent;
+    -fx-border-width: 0 1 0 0;
+}
+
+.titulo-historico {
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #1a1a1a;
+    -fx-padding: 0 0 6 4;
+}
+
+.area-historico {
+    -fx-background: transparent;
+    -fx-background-color: transparent;
+}
+
+.area-historico .viewport {
+    -fx-background-color: transparent;
+}
+
+.item-historico {
+    -fx-background-color: linear-gradient(to bottom right, #ffffff, #eeeeee);
+    -fx-text-fill: #333333;
+    -fx-font-size: 12px;
+    -fx-background-radius: 8;
+    -fx-border-color: #dddddd;
+    -fx-border-radius: 8;
+    -fx-border-width: 1;
+    -fx-alignment: center-left;
+    -fx-padding: 10 12;
+    -fx-cursor: hand;
+}
+
+.item-historico:hover {
+    -fx-background-color: linear-gradient(to bottom right, #e8e8e8, #dcdcdc);
+    -fx-border-color: #1a1a1a;
+}
+
+/* ================= ÁREA DE MENSAGENS ================= */
+
+.area-mensagens {
+    -fx-background: transparent;
+    -fx-background-color: transparent;
+}
+
+.area-mensagens .viewport {
+    -fx-background-color: transparent;
+}
+
+/* ================= BOLHAS DE MENSAGEM ================= */
+
+.avatar {
+    -fx-font-size: 18px;
+    -fx-min-width: 34px;
+    -fx-min-height: 34px;
+    -fx-max-width: 34px;
+    -fx-max-height: 34px;
+    -fx-alignment: center;
+    -fx-background-radius: 50%;
+    -fx-border-radius: 50%;
+}
+
+.avatar-usuario {
+    -fx-background-color: linear-gradient(to bottom right, #1a1a1a, #3a3a3a);
+    -fx-text-fill: white;
+    -fx-border-color: #1a1a1a;
+    -fx-border-width: 1.5;
+}
+
+.avatar-assistente {
+    -fx-background-color: linear-gradient(to bottom right, #e0e0e0, #bfbfbf);
+    -fx-text-fill: #1a1a1a;
+    -fx-border-color: #999999;
+    -fx-border-width: 1.5;
+}
+
+.bolha-usuario {
+    -fx-background-color: linear-gradient(to bottom right, #1a1a1a, #3a3a3a);
+    -fx-text-fill: white;
+    -fx-background-radius: 16 16 4 16;
+    -fx-font-size: 14px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 10, 0.2, 0, 2);
+}
+
+.bolha-assistente {
+    -fx-background-color: linear-gradient(to bottom right, #ffffff, #ececec);
+    -fx-text-fill: #1a1a1a;
+    -fx-background-radius: 16 16 16 4;
+    -fx-border-color: #1a1a1a;
+    -fx-border-width: 0 0 0 3;
+    -fx-border-radius: 16 16 16 4;
+    -fx-font-size: 14px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0.2, 0, 2);
+}
+
+.horario {
+    -fx-font-size: 10px;
+    -fx-text-fill: #8a8a8a;
+    -fx-padding: 2 6 0 6;
+}
+
+/* ================= ENTRADA DE TEXTO ================= */
+
+.rodape {
+    -fx-background-color: linear-gradient(to right, #f5f5f5, #ffffff);
+    -fx-border-color: #1a1a1a transparent transparent transparent;
+    -fx-border-width: 2 0 0 0;
+}
+
+.campo-mensagem {
+    -fx-background-color: #ffffff;
+    -fx-text-fill: #1a1a1a;
+    -fx-prompt-text-fill: #999999;
+    -fx-background-radius: 14;
+    -fx-border-radius: 14;
+    -fx-border-color: #cccccc;
+    -fx-padding: 12 15;
+    -fx-font-size: 14px;
+}
+
+.campo-mensagem:focused {
+    -fx-border-color: #1a1a1a;
+}
+
+.botao-enviar {
+    -fx-background-color: linear-gradient(to right, #1a1a1a, #4d4d4d);
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-background-radius: 12;
+    -fx-padding: 12 22;
+    -fx-cursor: hand;
+}
+
+.botao-enviar:hover {
+    -fx-background-color: linear-gradient(to right, #3a3a3a, #1a1a1a);
+}
+
+.botao-enviar:disabled {
+    -fx-opacity: 0.5;
+}
