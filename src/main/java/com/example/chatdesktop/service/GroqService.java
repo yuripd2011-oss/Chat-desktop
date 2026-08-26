@@ -43,6 +43,15 @@ public class GroqService {
     }
 
     public String perguntar(String mensagem) {
+        return perguntar(mensagem, "");
+    }
+
+    /**
+     * @param mensagem pergunta do usuário
+     * @param contexto trechos de documentos (RAG) para embasar a resposta;
+     *                 pode ser vazio quando não houver nada relevante
+     */
+    public String perguntar(String mensagem, String contexto) {
 
         if (!chaveConfigurada()) {
             return """
@@ -58,13 +67,22 @@ public class GroqService {
 
         try {
 
+            String textoSistema = "Você é um assistente útil, inteligente e amigável. "
+                    + "Responda em português do Brasil.";
+
+            if (contexto != null && !contexto.isBlank()) {
+                textoSistema += "\n\nIMPORTANTE: responda de acordo com as informações abaixo, "
+                        + "mesmo que pareçam diferentes do que você normalmente responderia. "
+                        + "Priorize sempre esse conteúdo:\n" + contexto;
+            }
+
             String json = """
                     {
                       "model": "%s",
                       "messages": [
                         {
                           "role": "system",
-                          "content": "Você é um assistente útil, inteligente e amigável. Responda em português do Brasil."
+                          "content": %s
                         },
                         {
                           "role": "user",
@@ -76,6 +94,7 @@ public class GroqService {
                     }
                     """.formatted(
                     MODELO,
+                    objectMapper.writeValueAsString(textoSistema),
                     objectMapper.writeValueAsString(mensagem)
             );
 

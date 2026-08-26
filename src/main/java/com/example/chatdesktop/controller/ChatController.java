@@ -2,6 +2,7 @@ package com.example.chatdesktop.controller;
 
 import com.example.chatdesktop.model.ChatMessage;
 import com.example.chatdesktop.service.GroqService;
+import com.example.chatdesktop.service.RagService;
 import com.example.chatdesktop.view.ChatView;
 import javafx.application.Platform;
 
@@ -10,8 +11,8 @@ import java.util.List;
 
 /**
  * Faz a ponte entre a View (interface) e o Service (Groq).
- * Contém a lógica de interação do chat, incluindo o histórico de conversas
- * e o título automático de cada conversa.
+ * Contém a lógica de interação do chat, incluindo o histórico de conversas,
+ * o título automático de cada conversa e a busca de contexto (RAG).
  */
 public class ChatController {
 
@@ -22,6 +23,7 @@ public class ChatController {
 
     private final ChatView view;
     private final GroqService groqService;
+    private final RagService ragService;
 
     private List<ChatMessage> conversaAtual = new ArrayList<>();
     private boolean tituloJaDefinido = false;
@@ -29,6 +31,7 @@ public class ChatController {
     public ChatController(ChatView view) {
         this.view = view;
         this.groqService = new GroqService();
+        this.ragService = new RagService();
 
         inicializar();
     }
@@ -75,7 +78,11 @@ public class ChatController {
 
         Thread thread = new Thread(() -> {
 
-            String resposta = groqService.perguntar(texto);
+            String contexto = ragService.buscarContexto(texto);
+
+            String resposta = !contexto.isBlank()
+                    ? contexto
+                    : groqService.perguntar(texto);
 
             Platform.runLater(() -> {
                 ChatMessage mensagemResposta = new ChatMessage(resposta, false);
