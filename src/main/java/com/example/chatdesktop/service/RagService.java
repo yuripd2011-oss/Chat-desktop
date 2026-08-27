@@ -14,7 +14,13 @@ public class RagService {
     // caminho confirmado via "Copy Reference" no IntelliJ:
     // o arquivo fica direto em resources/knowledge/, não em resources/com/.../knowledge/
     private static final String ARQUIVO =
-            "/knowledge/40+40= naverdathi.txt";
+            "/knowledge/cerebro.txt";
+
+    private static final String NOME_ARQUIVO = "cerebro.txt";
+
+    public String getNomeArquivo() {
+        return NOME_ARQUIVO;
+    }
 
     /**
      * Compara a pergunta linha por linha com o arquivo e retorna

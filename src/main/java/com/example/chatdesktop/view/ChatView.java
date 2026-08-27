@@ -25,6 +25,7 @@ public class ChatView {
     private final VBox listaHistorico = new VBox(8);
     private final TextField campoMensagem = new TextField();
     private final Button botaoEnviar = new Button("Enviar");
+    private final Button botaoRegenerar = new Button("🔄");
     private final Button botaoNovaConversa = new Button("+ Nova conversa");
     private final Button botaoTema = new Button("🌙 Tema");
     private final Label status = new Label("● Conectado à Groq");
@@ -82,7 +83,7 @@ public class ChatView {
         VBox barra = new VBox(10);
         barra.getStyleClass().add("barra-lateral");
         barra.setPadding(new Insets(18, 12, 18, 12));
-        barra.setPrefWidth(230);
+        barra.setPrefWidth(240);
 
         botaoNovaConversa.setMaxWidth(Double.MAX_VALUE);
         botaoNovaConversa.getStyleClass().add("botao-nova-conversa");
@@ -121,6 +122,9 @@ public class ChatView {
 
         botaoEnviar.getStyleClass().add("botao-enviar");
 
+        botaoRegenerar.getStyleClass().add("botao-regenerar");
+        botaoRegenerar.setTooltip(new javafx.scene.control.Tooltip("Regenerar última resposta"));
+
         HBox entrada = new HBox(10);
         entrada.getStyleClass().add("rodape");
         entrada.setPadding(new Insets(15));
@@ -128,7 +132,7 @@ public class ChatView {
 
         HBox.setHgrow(campoMensagem, Priority.ALWAYS);
 
-        entrada.getChildren().addAll(campoMensagem, botaoEnviar);
+        entrada.getChildren().addAll(campoMensagem, botaoRegenerar, botaoEnviar);
 
         return entrada;
     }
@@ -157,6 +161,24 @@ public class ChatView {
                 mensagem.isDeUsuario() ? Pos.CENTER_RIGHT : Pos.CENTER_LEFT
         );
 
+        // indicador de origem + fonte (só em respostas do assistente)
+        if (!mensagem.isDeUsuario() && mensagem.getOrigem() != null) {
+
+            Label badgeOrigem = new Label(rotuloOrigem(mensagem.getOrigem()));
+            badgeOrigem.getStyleClass().addAll(
+                    "badge-origem",
+                    "badge-origem-" + mensagem.getOrigem().name().toLowerCase()
+            );
+
+            blocoTextoHorario.getChildren().add(badgeOrigem);
+
+            if (mensagem.getFonte() != null) {
+                Label labelFonte = new Label("Fonte: " + mensagem.getFonte());
+                labelFonte.getStyleClass().add("label-fonte");
+                blocoTextoHorario.getChildren().add(labelFonte);
+            }
+        }
+
         HBox linha = new HBox(8);
         linha.setAlignment(Pos.BOTTOM_CENTER);
 
@@ -171,6 +193,14 @@ public class ChatView {
         mensagens.getChildren().add(linha);
     }
 
+    private String rotuloOrigem(ChatMessage.Origem origem) {
+        return switch (origem) {
+            case RAG -> "📄 RAG";
+            case INTERNET -> "🌐 Internet";
+            case LOCAL -> "🖥 Fallback local";
+        };
+    }
+
     /**
      * Remove todas as mensagens da tela, deixando o chat vazio
      * para começar uma nova conversa.
@@ -180,18 +210,37 @@ public class ChatView {
     }
 
     /**
-     * Adiciona um item clicável na barra lateral de histórico.
-     * Retorna o botão para o controller ligar a ação de clique.
+     * Remove a última mensagem exibida (usado para "Regenerar resposta").
      */
-    public Button adicionarItemHistorico(String titulo) {
+    public void removerUltimaMensagem() {
+        if (!mensagens.getChildren().isEmpty()) {
+            mensagens.getChildren().remove(mensagens.getChildren().size() - 1);
+        }
+    }
 
-        Button item = new Button(titulo);
-        item.getStyleClass().add("item-historico");
-        item.setMaxWidth(Double.MAX_VALUE);
+    /**
+     * Adiciona um item na barra lateral de histórico, com botão de
+     * carregar, renomear e excluir. O controller liga as ações.
+     */
+    public ItemHistorico adicionarItemHistorico(String titulo) {
 
-        listaHistorico.getChildren().add(item);
+        Button botaoCarregar = new Button(titulo);
+        botaoCarregar.getStyleClass().add("item-historico");
+        botaoCarregar.setMaxWidth(Double.MAX_VALUE);
+        HBox.setHgrow(botaoCarregar, Priority.ALWAYS);
 
-        return item;
+        Button botaoRenomear = new Button("✎");
+        botaoRenomear.getStyleClass().add("botao-icone-historico");
+
+        Button botaoExcluir = new Button("🗑");
+        botaoExcluir.getStyleClass().add("botao-icone-historico");
+
+        HBox linha = new HBox(4, botaoCarregar, botaoRenomear, botaoExcluir);
+        linha.setAlignment(Pos.CENTER_LEFT);
+
+        listaHistorico.getChildren().add(linha);
+
+        return new ItemHistorico(linha, botaoCarregar, botaoRenomear, botaoExcluir);
     }
 
     public void definirTituloConversaAtual(String titulo) {
@@ -220,11 +269,62 @@ public class ChatView {
         return botaoEnviar;
     }
 
+    public Button getBotaoRegenerar() {
+        return botaoRegenerar;
+    }
+
     public Button getBotaoNovaConversa() {
         return botaoNovaConversa;
     }
 
     public Button getBotaoTema() {
         return botaoTema;
+    }
+
+    /**
+     * Representa uma linha do histórico, com os três botões que o
+     * controller pode ligar (carregar, renomear, excluir) e um jeito
+     * de atualizar o título ou remover a linha da lista.
+     */
+    public class ItemHistorico {
+
+        private final HBox linha;
+        private final Button botaoCarregar;
+        private final Button botaoRenomear;
+        private final Button botaoExcluir;
+        private String tituloAtual;
+
+        private ItemHistorico(HBox linha, Button botaoCarregar, Button botaoRenomear, Button botaoExcluir) {
+            this.linha = linha;
+            this.botaoCarregar = botaoCarregar;
+            this.botaoRenomear = botaoRenomear;
+            this.botaoExcluir = botaoExcluir;
+            this.tituloAtual = botaoCarregar.getText();
+        }
+
+        public Button getBotaoCarregar() {
+            return botaoCarregar;
+        }
+
+        public Button getBotaoRenomear() {
+            return botaoRenomear;
+        }
+
+        public Button getBotaoExcluir() {
+            return botaoExcluir;
+        }
+
+        public String getTituloAtual() {
+            return tituloAtual;
+        }
+
+        public void definirTitulo(String novoTitulo) {
+            this.tituloAtual = novoTitulo;
+            botaoCarregar.setText(novoTitulo);
+        }
+
+        public void removerDaLista() {
+            listaHistorico.getChildren().remove(linha);
+        }
     }
 }

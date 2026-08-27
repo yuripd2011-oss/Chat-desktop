@@ -114,6 +114,64 @@
     -fx-border-color: #1a1a1a;
 }
 
+.botao-regenerar {
+    -fx-background-color: #eeeeee;
+    -fx-text-fill: #1a1a1a;
+    -fx-background-radius: 12;
+    -fx-border-color: #cccccc;
+    -fx-border-radius: 12;
+    -fx-border-width: 1;
+    -fx-padding: 12 16;
+    -fx-cursor: hand;
+    -fx-font-size: 14px;
+}
+
+.botao-regenerar:hover {
+    -fx-background-color: #e0e0e0;
+}
+
+.badge-origem {
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 8;
+    -fx-padding: 2 8;
+}
+
+.badge-origem-rag {
+    -fx-background-color: #d7f2df;
+    -fx-text-fill: #1f4d2e;
+}
+
+.badge-origem-internet {
+    -fx-background-color: #d7e9f2;
+    -fx-text-fill: #1f3a4d;
+}
+
+.badge-origem-local {
+    -fx-background-color: #e6d9f7;
+    -fx-text-fill: #3a2f4d;
+}
+
+.label-fonte {
+    -fx-font-size: 10px;
+    -fx-text-fill: #777777;
+    -fx-font-style: italic;
+}
+
+.botao-icone-historico {
+    -fx-background-color: transparent;
+    -fx-text-fill: #666666;
+    -fx-font-size: 12px;
+    -fx-padding: 4 8;
+    -fx-cursor: hand;
+    -fx-background-radius: 6;
+}
+
+.botao-icone-historico:hover {
+    -fx-background-color: #e0e0e0;
+    -fx-text-fill: #1a1a1a;
+}
+
 /* ================= ÁREA DE MENSAGENS ================= */
 
 .area-mensagens {
