@@ -1,6 +1,7 @@
 package com.example.chatdesktop.controller;
 
 import com.example.chatdesktop.model.ChatMessage;
+import com.example.chatdesktop.service.DataHoraService;
 import com.example.chatdesktop.service.GroqService;
 import com.example.chatdesktop.service.RagService;
 import com.example.chatdesktop.view.ChatView;
@@ -24,6 +25,7 @@ public class ChatController {
     private final ChatView view;
     private final GroqService groqService;
     private final RagService ragService;
+    private final DataHoraService dataHoraService;
 
     private List<ChatMessage> conversaAtual = new ArrayList<>();
     private boolean tituloJaDefinido = false;
@@ -32,6 +34,7 @@ public class ChatController {
         this.view = view;
         this.groqService = new GroqService();
         this.ragService = new RagService();
+        this.dataHoraService = new DataHoraService();
 
         inicializar();
     }
@@ -78,11 +81,15 @@ public class ChatController {
 
         Thread thread = new Thread(() -> {
 
-            String contexto = ragService.buscarContexto(texto);
+            String respostaDataHora = dataHoraService.responderSeForPerguntaDeDataHora(texto);
 
-            String resposta = !contexto.isBlank()
-                    ? contexto
-                    : groqService.perguntar(texto);
+            String resposta;
+            if (respostaDataHora != null) {
+                resposta = respostaDataHora;
+            } else {
+                String contexto = ragService.buscarContexto(texto);
+                resposta = !contexto.isBlank() ? contexto : groqService.perguntar(texto);
+            }
 
             Platform.runLater(() -> {
                 ChatMessage mensagemResposta = new ChatMessage(resposta, false);
@@ -154,6 +161,6 @@ public class ChatController {
 
     private static String resumir(ChatMessage mensagem) {
         String texto = mensagem.getTexto().replace("\n", " ").trim();
-        return texto.length() > 28 ? texto.substring(0, 28) + "..." : texto;
+        return texto.length() > 20 ? texto.substring(0, 20) + "..." : texto;
     }
 }

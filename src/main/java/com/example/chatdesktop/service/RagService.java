@@ -16,6 +16,11 @@ public class RagService {
     private static final String ARQUIVO =
             "/knowledge/40+40= naverdathi.txt";
 
+    /**
+     * Compara a pergunta linha por linha com o arquivo e retorna
+     * SÓ as linhas que têm palavra em comum com a pergunta — não o
+     * arquivo inteiro, mesmo que ele tenha várias "piadas" diferentes.
+     */
     public String buscarContexto(String pergunta) {
 
         String documento = carregarDocumento();
@@ -25,16 +30,13 @@ public class RagService {
         }
 
         Set<String> palavrasPergunta = extrairPalavras(pergunta);
-        Set<String> palavrasDocumento = extrairPalavras(documento);
 
-        boolean encontrou = palavrasPergunta.stream()
-                .anyMatch(palavrasDocumento::contains);
-
-        if (!encontrou) {
-            return "";
-        }
-
-        return documento.trim();
+        return Arrays.stream(documento.split("\n"))
+                .map(String::trim)
+                .filter(linha -> !linha.isBlank())
+                .filter(linha -> extrairPalavras(linha).stream()
+                        .anyMatch(palavrasPergunta::contains))
+                .collect(Collectors.joining("\n"));
     }
 
     private String carregarDocumento() {

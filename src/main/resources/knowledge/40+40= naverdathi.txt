@@ -1,1 +1,2 @@
-40+40= naverdathi
+40+40 = naverdathi
+10+10=1010
