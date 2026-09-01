@@ -1,8 +1,11 @@
 package com.example.chatdesktop.controller;
 
 import com.example.chatdesktop.model.ChatMessage;
+import com.example.chatdesktop.model.ConversaSalva;
+import com.example.chatdesktop.model.MensagemSalva;
 import com.example.chatdesktop.service.DataHoraService;
 import com.example.chatdesktop.service.GroqService;
+import com.example.chatdesktop.service.HistoricoService;
 import com.example.chatdesktop.service.RagService;
 import com.example.chatdesktop.view.ChatView;
 import javafx.application.Platform;
@@ -14,9 +17,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Faz a ponte entre a View (interface) e os Services (Groq, RAG, data/hora).
- * Contém a lógica de interação do chat: histórico de conversas, título
- * automático, indicador de origem da resposta e regeneração de resposta.
+ * Faz a ponte entre a View (interface) e os Services (Groq, RAG, data/hora,
+ * histórico). Contém a lógica de interação do chat: histórico persistido
+ * em disco, título automático, indicador de origem da resposta e
+ * regeneração de resposta.
  */
 public class ChatController {
 
@@ -29,6 +33,9 @@ public class ChatController {
     private final GroqService groqService;
     private final RagService ragService;
     private final DataHoraService dataHoraService;
+    private final HistoricoService historicoService;
+
+    private final List<ConversaSalva> historico;
 
     private List<ChatMessage> conversaAtual = new ArrayList<>();
     private boolean tituloJaDefinido = false;
@@ -39,11 +46,19 @@ public class ChatController {
         this.groqService = new GroqService();
         this.ragService = new RagService();
         this.dataHoraService = new DataHoraService();
+        this.historicoService = new HistoricoService();
+
+        this.historico = historicoService.carregar();
 
         inicializar();
     }
 
     private void inicializar() {
+
+        // recria os itens da barra lateral a partir do que foi salvo em disco
+        for (ConversaSalva conversaSalva : historico) {
+            criarItemNaTela(conversaSalva);
+        }
 
         mostrarBoasVindas();
 
@@ -180,68 +195,117 @@ public class ChatController {
             return;
         }
 
-        List<ChatMessage> conversaSalva = new ArrayList<>(conversaAtual);
-
-        String tituloItem = conversaSalva.stream()
+        String tituloItem = conversaAtual.stream()
                 .filter(ChatMessage::isDeUsuario)
                 .findFirst()
                 .map(ChatController::resumir)
                 .orElse("Conversa sem título");
 
-        ChatView.ItemHistorico item = view.adicionarItemHistorico(tituloItem);
+        ConversaSalva conversaSalva = new ConversaSalva();
+        conversaSalva.setTitulo(tituloItem);
+        conversaSalva.setMensagens(paraMensagensSalvas(conversaAtual));
 
-        item.getBotaoCarregar().setOnAction(event ->
-                carregarConversa(conversaSalva, item.getTituloAtual()));
+        historico.add(conversaSalva);
+        persistirHistorico();
 
-        item.getBotaoRenomear().setOnAction(event -> renomearItem(item));
-
-        item.getBotaoExcluir().setOnAction(event -> excluirItem(item));
+        criarItemNaTela(conversaSalva);
     }
 
-    private void renomearItem(ChatView.ItemHistorico item) {
+    /**
+     * Cria a linha na barra lateral para uma conversa (nova ou restaurada
+     * do disco) e liga os botões de carregar, renomear e excluir.
+     */
+    private void criarItemNaTela(ConversaSalva conversaSalva) {
 
-        TextInputDialog dialog = new TextInputDialog(item.getTituloAtual());
-        dialog.setTitle("Renomear conversa");
-        dialog.setHeaderText(null);
-        dialog.setContentText("Novo nome:");
+        ChatView.ItemHistorico item = view.adicionarItemHistorico(conversaSalva.getTitulo());
 
-        dialog.showAndWait().ifPresent(novoTitulo -> {
-            String limpo = novoTitulo.trim();
-            if (!limpo.isEmpty()) {
-                item.definirTitulo(limpo);
-            }
+        item.getBotaoCarregar().setOnAction(event -> carregarConversa(conversaSalva));
+
+        item.getBotaoRenomear().setOnAction(event -> {
+            TextInputDialog dialog = new TextInputDialog(conversaSalva.getTitulo());
+            dialog.setTitle("Renomear conversa");
+            dialog.setHeaderText(null);
+            dialog.setContentText("Novo nome:");
+
+            dialog.showAndWait().ifPresent(novoTitulo -> {
+                String limpo = novoTitulo.trim();
+                if (!limpo.isEmpty()) {
+                    conversaSalva.setTitulo(limpo);
+                    item.definirTitulo(limpo);
+                    persistirHistorico();
+                }
+            });
+        });
+
+        item.getBotaoExcluir().setOnAction(event -> {
+            Alert alerta = new Alert(Alert.AlertType.CONFIRMATION);
+            alerta.setTitle("Excluir conversa");
+            alerta.setHeaderText(null);
+            alerta.setContentText("Tem certeza que deseja excluir esta conversa do histórico?");
+
+            alerta.showAndWait().ifPresent(botao -> {
+                if (botao == ButtonType.OK) {
+                    historico.remove(conversaSalva);
+                    persistirHistorico();
+                    item.removerDaLista();
+                }
+            });
         });
     }
 
-    private void excluirItem(ChatView.ItemHistorico item) {
-
-        Alert alerta = new Alert(Alert.AlertType.CONFIRMATION);
-        alerta.setTitle("Excluir conversa");
-        alerta.setHeaderText(null);
-        alerta.setContentText("Tem certeza que deseja excluir esta conversa do histórico?");
-
-        alerta.showAndWait().ifPresent(botao -> {
-            if (botao == ButtonType.OK) {
-                item.removerDaLista();
-            }
-        });
-    }
-
-    private void carregarConversa(List<ChatMessage> conversa, String titulo) {
+    private void carregarConversa(ConversaSalva conversaSalva) {
 
         salvarConversaAtualNoHistorico();
 
         view.limparMensagens();
 
-        conversaAtual = new ArrayList<>(conversa);
+        conversaAtual = paraChatMessages(conversaSalva.getMensagens());
         tituloJaDefinido = true;
-        view.definirTituloConversaAtual(titulo);
+        view.definirTituloConversaAtual(conversaSalva.getTitulo());
 
         for (ChatMessage mensagem : conversaAtual) {
             view.adicionarMensagem(mensagem);
         }
 
         view.definirStatusConectado();
+    }
+
+    private void persistirHistorico() {
+        historicoService.salvar(historico);
+    }
+
+    private static List<MensagemSalva> paraMensagensSalvas(List<ChatMessage> mensagens) {
+
+        List<MensagemSalva> resultado = new ArrayList<>();
+
+        for (ChatMessage m : mensagens) {
+            MensagemSalva ms = new MensagemSalva();
+            ms.setTexto(m.getTexto());
+            ms.setDeUsuario(m.isDeUsuario());
+            ms.setHorario(m.getHorarioFormatado());
+            ms.setOrigem(m.getOrigem() != null ? m.getOrigem().name() : null);
+            ms.setFonte(m.getFonte());
+            resultado.add(ms);
+        }
+
+        return resultado;
+    }
+
+    private static List<ChatMessage> paraChatMessages(List<MensagemSalva> mensagens) {
+
+        List<ChatMessage> resultado = new ArrayList<>();
+
+        for (MensagemSalva ms : mensagens) {
+            ChatMessage.Origem origem = ms.getOrigem() != null
+                    ? ChatMessage.Origem.valueOf(ms.getOrigem())
+                    : null;
+
+            resultado.add(new ChatMessage(
+                    ms.getTexto(), ms.isDeUsuario(), origem, ms.getFonte(), ms.getHorario()
+            ));
+        }
+
+        return resultado;
     }
 
     private static String resumir(ChatMessage mensagem) {

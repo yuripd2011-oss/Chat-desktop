@@ -19,6 +19,7 @@ public class ChatMessage {
     private final String texto;
     private final boolean deUsuario;
     private final LocalTime horario;
+    private final String horarioForcado; // usado ao restaurar do histórico salvo
     private final Origem origem;
     private final String fonte;
 
@@ -30,6 +31,20 @@ public class ChatMessage {
         this.texto = texto;
         this.deUsuario = deUsuario;
         this.horario = LocalTime.now();
+        this.horarioForcado = null;
+        this.origem = origem;
+        this.fonte = fonte;
+    }
+
+    /**
+     * Construtor usado ao restaurar uma mensagem salva em disco,
+     * preservando o horário exato que foi salvo (em vez de usar "agora").
+     */
+    public ChatMessage(String texto, boolean deUsuario, Origem origem, String fonte, String horarioSalvo) {
+        this.texto = texto;
+        this.deUsuario = deUsuario;
+        this.horario = LocalTime.now();
+        this.horarioForcado = horarioSalvo;
         this.origem = origem;
         this.fonte = fonte;
     }
@@ -43,7 +58,7 @@ public class ChatMessage {
     }
 
     public String getHorarioFormatado() {
-        return horario.format(FORMATO_HORA);
+        return horarioForcado != null ? horarioForcado : horario.format(FORMATO_HORA);
     }
 
     public Origem getOrigem() {

@@ -26,6 +26,7 @@ import javafx.stage.Stage;
 import javafx.util.Duration;
 
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.prefs.Preferences;
 
 public class Main extends Application {
 
@@ -43,11 +44,18 @@ public class Main extends Application {
 
         Scene cena = new Scene(raizComOverlay, 1000, 700);
 
-        cena.getStylesheets().add(
-                getClass().getResource(CSS_ESCURO).toExternalForm()
-        );
+        boolean temaClaroSalvo = Preferences.userNodeForPackage(Main.class)
+                .get("tema", "escuro")
+                .equals("claro");
 
-        configurarAlternanciaDeTema(cena, view);
+        if (temaClaroSalvo) {
+            cena.getStylesheets().add(getClass().getResource(CSS_CLARO).toExternalForm());
+            view.getBotaoTema().setText("☀ Tema");
+        } else {
+            cena.getStylesheets().add(getClass().getResource(CSS_ESCURO).toExternalForm());
+        }
+
+        configurarAlternanciaDeTema(cena, view, temaClaroSalvo);
         configurarAtalhosDeTeclado(cena, view, controller);
 
         // toca a introdução também sempre que "Nova conversa" for clicado,
@@ -98,11 +106,13 @@ public class Main extends Application {
     }
 
     /**
-     * Liga o botão de tema à troca entre o CSS escuro e o claro.
+     * Liga o botão de tema à troca entre o CSS escuro e o claro,
+     * salvando a escolha para a próxima vez que o app abrir.
      */
-    private void configurarAlternanciaDeTema(Scene cena, ChatView view) {
+    private void configurarAlternanciaDeTema(Scene cena, ChatView view, boolean comecaClaro) {
 
-        AtomicBoolean temaEscuro = new AtomicBoolean(true);
+        AtomicBoolean temaEscuro = new AtomicBoolean(!comecaClaro);
+        Preferences preferencias = Preferences.userNodeForPackage(Main.class);
 
         view.getBotaoTema().setOnAction(event -> {
 
@@ -111,9 +121,11 @@ public class Main extends Application {
             if (temaEscuro.get()) {
                 cena.getStylesheets().add(getClass().getResource(CSS_CLARO).toExternalForm());
                 view.getBotaoTema().setText("☀ Tema");
+                preferencias.put("tema", "claro");
             } else {
                 cena.getStylesheets().add(getClass().getResource(CSS_ESCURO).toExternalForm());
                 view.getBotaoTema().setText("🌙 Tema");
+                preferencias.put("tema", "escuro");
             }
 
             temaEscuro.set(!temaEscuro.get());
