@@ -1,0 +1,244 @@
+/* ============================================================
+   NEOCHAT LOGIN
+   Dark Premium
+   ============================================================ */
+
+.login-root {
+    -fx-background-color: #09090b;
+    -fx-font-family: "Segoe UI", "Inter", Arial, sans-serif;
+}
+
+
+/* ============================================================
+   CONTAINER PRINCIPAL
+   ============================================================ */
+
+.login-container {
+    -fx-alignment: CENTER;
+    -fx-spacing: 26px;
+}
+
+
+/* ============================================================
+   LOGO
+   ============================================================ */
+
+.logo-area {
+    -fx-alignment: CENTER;
+}
+
+.logo-simbolo {
+    -fx-background-color: #18181b;
+    -fx-text-fill: #ffffff;
+
+    -fx-font-size: 22px;
+    -fx-font-weight: bold;
+
+    -fx-alignment: CENTER;
+
+    -fx-min-width: 48px;
+    -fx-pref-width: 48px;
+
+    -fx-min-height: 48px;
+    -fx-pref-height: 48px;
+
+    -fx-background-radius: 14px;
+
+    -fx-border-color: #29292d;
+    -fx-border-width: 1px;
+    -fx-border-radius: 14px;
+}
+
+.logo-titulo {
+    -fx-text-fill: #fafafa;
+
+    -fx-font-size: 25px;
+    -fx-font-weight: bold;
+}
+
+.logo-subtitulo {
+    -fx-text-fill: #71717a;
+
+    -fx-font-size: 12px;
+}
+
+
+/* ============================================================
+   CARD DO LOGIN
+   ============================================================ */
+
+.login-card {
+    -fx-background-color: #111113;
+
+    -fx-background-radius: 14px;
+
+    -fx-border-color: #242427;
+    -fx-border-width: 1px;
+    -fx-border-radius: 14px;
+
+    -fx-min-width: 390px;
+    -fx-pref-width: 390px;
+    -fx-max-width: 390px;
+}
+
+
+/* ============================================================
+   TÍTULOS
+   ============================================================ */
+
+.login-titulo {
+    -fx-text-fill: #f4f4f5;
+
+    -fx-font-size: 19px;
+    -fx-font-weight: bold;
+}
+
+.login-descricao {
+    -fx-text-fill: #71717a;
+
+    -fx-font-size: 12px;
+
+    -fx-padding: 0 0 8px 0;
+}
+
+
+/* ============================================================
+   LABEL DOS CAMPOS
+   ============================================================ */
+
+.campo-label {
+    -fx-text-fill: #a1a1aa;
+
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+}
+
+
+/* ============================================================
+   CAMPOS
+   ============================================================ */
+
+.campo-login {
+    -fx-background-color: #18181b;
+
+    -fx-text-fill: #f4f4f5;
+
+    -fx-prompt-text-fill: #52525b;
+
+    -fx-font-size: 13px;
+
+    -fx-padding: 11px 12px;
+
+    -fx-background-radius: 8px;
+
+    -fx-border-color: #29292d;
+    -fx-border-width: 1px;
+    -fx-border-radius: 8px;
+}
+
+.campo-login:hover {
+    -fx-border-color: #3f3f46;
+}
+
+.campo-login:focused {
+    -fx-background-color: #1b1b1f;
+
+    -fx-border-color: #71717a;
+
+    -fx-effect: dropshadow(
+            gaussian,
+            rgba(255,255,255,0.06),
+            8,
+            0.15,
+            0,
+            0
+    );
+}
+
+
+/* ============================================================
+   BOTÃO ENTRAR
+   ============================================================ */
+
+.botao-entrar {
+    -fx-background-color: #f4f4f5;
+
+    -fx-text-fill: #09090b;
+
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+
+    -fx-min-height: 42px;
+
+    -fx-background-radius: 8px;
+
+    -fx-cursor: hand;
+}
+
+.botao-entrar:hover {
+    -fx-background-color: #ffffff;
+
+    -fx-effect: dropshadow(
+            gaussian,
+            rgba(255,255,255,0.12),
+            12,
+            0.15,
+            0,
+            2
+    );
+}
+
+.botao-entrar:pressed {
+    -fx-background-color: #d4d4d8;
+
+    -fx-effect: none;
+}
+
+
+/* ============================================================
+   ERRO
+   ============================================================ */
+
+.mensagem-erro {
+    -fx-text-fill: #f87171;
+
+    -fx-font-size: 11px;
+
+    -fx-padding: 2px 0 2px 2px;
+}
+
+
+/* ============================================================
+   SEPARADOR
+   ============================================================ */
+
+.linha-separador {
+    -fx-background-color: #27272a;
+
+    -fx-min-height: 1px;
+    -fx-pref-height: 1px;
+    -fx-max-height: 1px;
+}
+
+.separador-texto {
+    -fx-text-fill: #52525b;
+
+    -fx-font-size: 10px;
+
+    -fx-padding: 0 4px;
+}
+
+
+/* ============================================================
+   RODAPÉ
+   ============================================================ */
+
+.login-rodape {
+    -fx-text-fill: #52525b;
+
+    -fx-font-size: 10px;
+
+    -fx-alignment: CENTER;
+
+    -fx-max-width: Infinity;
+}

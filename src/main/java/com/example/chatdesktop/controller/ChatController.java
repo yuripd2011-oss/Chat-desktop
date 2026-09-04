@@ -8,20 +8,17 @@ import com.example.chatdesktop.service.GroqService;
 import com.example.chatdesktop.service.HistoricoService;
 import com.example.chatdesktop.service.RagService;
 import com.example.chatdesktop.view.ChatView;
+
 import javafx.application.Platform;
+import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.TextInputDialog;
 
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Faz a ponte entre a View (interface) e os Services (Groq, RAG, data/hora,
- * histórico). Contém a lógica de interação do chat: histórico persistido
- * em disco, título automático, indicador de origem da resposta e
- * regeneração de resposta.
- */
 public class ChatController {
 
     private static final String MENSAGEM_BOAS_VINDAS =
@@ -37,12 +34,22 @@ public class ChatController {
 
     private final List<ConversaSalva> historico;
 
-    private List<ChatMessage> conversaAtual = new ArrayList<>();
+    private List<ChatMessage> conversaAtual =
+            new ArrayList<>();
+
     private boolean tituloJaDefinido = false;
     private String ultimaPerguntaUsuario = null;
 
+    private boolean temaEscuro = true;
+
     public ChatController(ChatView view) {
+
         this.view = view;
+
+        log("==========================================");
+        log("INICIANDO CHAT CONTROLLER");
+        log("==========================================");
+
         this.groqService = new GroqService();
         this.ragService = new RagService();
         this.dataHoraService = new DataHoraService();
@@ -50,266 +57,919 @@ public class ChatController {
 
         this.historico = historicoService.carregar();
 
+        log("Histórico carregado: " + historico.size() + " conversa(s).");
+
         inicializar();
+    }
+
+    private void log(String mensagem) {
+        System.out.println("[NeoChat] " + mensagem);
+    }
+
+    private void logErro(String mensagem, Exception erro) {
+        System.err.println("[NeoChat][ERRO] " + mensagem);
+        System.err.println("[NeoChat][ERRO] " + erro.getMessage());
+        erro.printStackTrace();
     }
 
     private void inicializar() {
 
-        // recria os itens da barra lateral a partir do que foi salvo em disco
-        for (ConversaSalva conversaSalva : historico) {
-            criarItemNaTela(conversaSalva);
+        try {
+
+            /*
+             * HISTÓRICO
+             */
+            for (ConversaSalva conversaSalva : historico) {
+                criarItemNaTela(conversaSalva);
+            }
+
+            /*
+             * BOAS-VINDAS
+             */
+            mostrarBoasVindas();
+
+            /*
+             * ENTER
+             */
+            view.getCampoMensagem().setOnAction(event ->
+                    enviarMensagem()
+            );
+
+            /*
+             * ENVIAR
+             */
+            view.getBotaoEnviar().setOnAction(event ->
+                    enviarMensagem()
+            );
+
+            /*
+             * REGENERAR
+             */
+            view.getBotaoRegenerar().setOnAction(event ->
+                    regenerarResposta()
+            );
+
+            /*
+             * NOVA CONVERSA
+             */
+            view.getBotaoNovaConversa().setOnAction(event ->
+                    iniciarNovaConversa()
+            );
+
+            /*
+             * TEMA
+             */
+            view.getBotaoTema().setOnAction(event ->
+                    alternarTema()
+            );
+
+            /*
+             * Configuração inicial do botão.
+             */
+            view.getBotaoTema().setText("☀ Tema claro");
+
+            /*
+             * Aplica o tema escuro depois que a Scene existir.
+             */
+            Platform.runLater(this::aplicarTemaEscuro);
+
+            log("ChatController inicializado com sucesso.");
+
+        } catch (Exception erro) {
+            logErro("Erro durante a inicialização.", erro);
         }
-
-        mostrarBoasVindas();
-
-        view.getCampoMensagem().setOnAction(event -> enviarMensagem());
-        view.getBotaoEnviar().setOnAction(event -> enviarMensagem());
-        view.getBotaoRegenerar().setOnAction(event -> regenerarResposta());
-        view.getBotaoNovaConversa().setOnAction(event -> iniciarNovaConversa());
     }
 
+    /*
+     * =========================================================
+     * TEMA
+     * =========================================================
+     */
+
+    private void alternarTema() {
+
+        try {
+
+            Scene cena = view.getRaiz().getScene();
+
+            if (cena == null) {
+                log("Scene ainda não disponível.");
+                return;
+            }
+
+            if (temaEscuro) {
+                aplicarTemaClaro();
+            } else {
+                aplicarTemaEscuro();
+            }
+
+        } catch (Exception erro) {
+            logErro("Erro ao alternar tema.", erro);
+        }
+    }
+
+    private void aplicarTemaEscuro() {
+
+        Scene cena = view.getRaiz().getScene();
+
+        if (cena == null) {
+            return;
+        }
+
+        removerTemas(cena);
+
+        URL css = getClass().getResource(
+                "/com/example/chatdesktop/css/chat-dark.css"
+        );
+
+        if (css == null) {
+            log("chat-dark.css não encontrado.");
+            return;
+        }
+
+        cena.getStylesheets().add(
+                css.toExternalForm()
+        );
+
+        temaEscuro = true;
+
+        view.getBotaoTema().setText("☀ Tema claro");
+
+        log("Tema escuro ativado.");
+    }
+
+    private void aplicarTemaClaro() {
+
+        Scene cena = view.getRaiz().getScene();
+
+        if (cena == null) {
+            return;
+        }
+
+        removerTemas(cena);
+
+        URL css = getClass().getResource(
+                "/com/example/chatdesktop/css/chat-light.css"
+        );
+
+        if (css == null) {
+            log("chat-light.css não encontrado.");
+            return;
+        }
+
+        cena.getStylesheets().add(
+                css.toExternalForm()
+        );
+
+        temaEscuro = false;
+
+        view.getBotaoTema().setText("🌙 Tema escuro");
+
+        log("Tema claro ativado.");
+    }
+
+    private void removerTemas(Scene cena) {
+
+        cena.getStylesheets().removeIf(
+                folha ->
+                        folha.contains("chat-dark.css")
+                                ||
+                                folha.contains("chat-light.css")
+        );
+    }
+
+    /*
+     * =========================================================
+     * BOAS-VINDAS
+     * =========================================================
+     */
+
     private void mostrarBoasVindas() {
-        ChatMessage boasVindas = new ChatMessage(MENSAGEM_BOAS_VINDAS, false);
+
+        ChatMessage boasVindas =
+                new ChatMessage(
+                        MENSAGEM_BOAS_VINDAS,
+                        false
+                );
+
         view.adicionarMensagem(boasVindas);
+
         conversaAtual.add(boasVindas);
-        view.definirTituloConversaAtual("Nova conversa");
+
+        view.definirTituloConversaAtual(
+                "Nova conversa"
+        );
+
         tituloJaDefinido = false;
         ultimaPerguntaUsuario = null;
     }
 
+    /*
+     * =========================================================
+     * ENVIAR MENSAGEM
+     * =========================================================
+     */
+
     private void enviarMensagem() {
 
-        String texto = view.getCampoMensagem().getText().trim();
+        try {
 
-        if (texto.isEmpty()) {
-            return;
+            if (view.getBotaoEnviar().isDisabled()) {
+                return;
+            }
+
+            String texto =
+                    view.getCampoMensagem()
+                            .getText()
+                            .trim();
+
+            if (texto.isEmpty()) {
+                return;
+            }
+
+            ChatMessage mensagemUsuario =
+                    new ChatMessage(
+                            texto,
+                            true
+                    );
+
+            view.adicionarMensagem(
+                    mensagemUsuario
+            );
+
+            conversaAtual.add(
+                    mensagemUsuario
+            );
+
+            if (!tituloJaDefinido) {
+
+                String titulo =
+                        resumir(mensagemUsuario);
+
+                view.definirTituloConversaAtual(
+                        titulo
+                );
+
+                tituloJaDefinido = true;
+            }
+
+            view.getCampoMensagem().clear();
+
+            ultimaPerguntaUsuario = texto;
+
+            processarPergunta(texto);
+
+        } catch (Exception erro) {
+
+            logErro(
+                    "Erro ao enviar mensagem.",
+                    erro
+            );
         }
-
-        ChatMessage mensagemUsuario = new ChatMessage(texto, true);
-        view.adicionarMensagem(mensagemUsuario);
-        conversaAtual.add(mensagemUsuario);
-
-        // título automático: gerado a partir da primeira mensagem do usuário
-        if (!tituloJaDefinido) {
-            view.definirTituloConversaAtual(resumir(mensagemUsuario));
-            tituloJaDefinido = true;
-        }
-
-        view.getCampoMensagem().clear();
-
-        ultimaPerguntaUsuario = texto;
-        processarPergunta(texto);
     }
 
-    /**
-     * Refaz a última pergunta, removendo a resposta anterior e
-     * gerando uma nova no lugar.
+    /*
+     * =========================================================
+     * REGENERAR
+     * =========================================================
      */
+
     private void regenerarResposta() {
 
-        if (ultimaPerguntaUsuario == null) {
-            return;
-        }
+        try {
 
-        if (!conversaAtual.isEmpty() && !conversaAtual.get(conversaAtual.size() - 1).isDeUsuario()) {
-            conversaAtual.remove(conversaAtual.size() - 1);
-            view.removerUltimaMensagem();
-        }
+            if (ultimaPerguntaUsuario == null) {
+                return;
+            }
 
-        processarPergunta(ultimaPerguntaUsuario);
-    }
+            if (view.getBotaoEnviar().isDisabled()) {
+                return;
+            }
 
-    /**
-     * Busca a resposta (data/hora local, RAG, ou Groq pela internet),
-     * já marcando a origem e a fonte da mensagem.
-     */
-    private void processarPergunta(String texto) {
+            if (!conversaAtual.isEmpty()) {
 
-        view.getBotaoEnviar().setDisable(true);
-        view.getBotaoRegenerar().setDisable(true);
-        view.definirStatusPensando();
+                ChatMessage ultimaMensagem =
+                        conversaAtual.get(
+                                conversaAtual.size() - 1
+                        );
 
-        Thread thread = new Thread(() -> {
+                if (!ultimaMensagem.isDeUsuario()) {
 
-            ChatMessage mensagemResposta;
-
-            String respostaDataHora = dataHoraService.responderSeForPerguntaDeDataHora(texto);
-
-            if (respostaDataHora != null) {
-                mensagemResposta = new ChatMessage(
-                        respostaDataHora, false, ChatMessage.Origem.LOCAL, null
-                );
-            } else {
-                String contextoRag = ragService.buscarContexto(texto);
-
-                if (!contextoRag.isBlank()) {
-                    mensagemResposta = new ChatMessage(
-                            contextoRag, false, ChatMessage.Origem.RAG, ragService.getNomeArquivo()
+                    conversaAtual.remove(
+                            conversaAtual.size() - 1
                     );
-                } else {
-                    String respostaGroq = groqService.perguntar(texto);
-                    mensagemResposta = new ChatMessage(
-                            respostaGroq, false, ChatMessage.Origem.INTERNET, null
-                    );
+
+                    view.removerUltimaMensagem();
                 }
             }
 
-            ChatMessage respostaFinal = mensagemResposta;
+            processarPergunta(
+                    ultimaPerguntaUsuario
+            );
 
-            Platform.runLater(() -> {
-                view.adicionarMensagem(respostaFinal);
-                conversaAtual.add(respostaFinal);
+        } catch (Exception erro) {
 
-                view.getBotaoEnviar().setDisable(false);
-                view.getBotaoRegenerar().setDisable(false);
-                view.definirStatusConectado();
-            });
-        });
+            logErro(
+                    "Erro ao regenerar resposta.",
+                    erro
+            );
+        }
+    }
+
+    /*
+     * =========================================================
+     * PROCESSAMENTO
+     * =========================================================
+     */
+
+    private void processarPergunta(
+            String texto
+    ) {
+
+        view.getBotaoEnviar()
+                .setDisable(true);
+
+        view.getBotaoRegenerar()
+                .setDisable(true);
+
+        view.definirStatusPensando();
+
+        Thread thread =
+                new Thread(() -> {
+
+                    try {
+
+                        ChatMessage mensagemResposta;
+
+                        /*
+                         * DATA / HORA
+                         */
+                        String respostaDataHora =
+                                dataHoraService
+                                        .responderSeForPerguntaDeDataHora(
+                                                texto
+                                        );
+
+                        if (respostaDataHora != null
+                                && !respostaDataHora.isBlank()) {
+
+                            mensagemResposta =
+                                    new ChatMessage(
+                                            respostaDataHora,
+                                            false,
+                                            ChatMessage.Origem.LOCAL,
+                                            null
+                                    );
+
+                        } else {
+
+                            /*
+                             * RAG
+                             */
+                            String contextoRag =
+                                    ragService.buscarContexto(
+                                            texto
+                                    );
+
+                            if (contextoRag != null
+                                    && !contextoRag.isBlank()) {
+
+                                mensagemResposta =
+                                        new ChatMessage(
+                                                contextoRag,
+                                                false,
+                                                ChatMessage.Origem.RAG,
+                                                ragService.getNomeArquivo()
+                                        );
+
+                            } else {
+
+                                /*
+                                 * GROQ
+                                 */
+                                String respostaGroq =
+                                        groqService.perguntar(
+                                                texto
+                                        );
+
+                                if (respostaGroq == null
+                                        || respostaGroq.isBlank()) {
+
+                                    respostaGroq =
+                                            "Não consegui obter uma resposta agora.";
+                                }
+
+                                mensagemResposta =
+                                        new ChatMessage(
+                                                respostaGroq,
+                                                false,
+                                                ChatMessage.Origem.INTERNET,
+                                                null
+                                        );
+                            }
+                        }
+
+                        ChatMessage respostaFinal =
+                                mensagemResposta;
+
+                        Platform.runLater(() -> {
+
+                            view.adicionarMensagem(
+                                    respostaFinal
+                            );
+
+                            conversaAtual.add(
+                                    respostaFinal
+                            );
+
+                            view.getBotaoEnviar()
+                                    .setDisable(false);
+
+                            view.getBotaoRegenerar()
+                                    .setDisable(false);
+
+                            view.definirStatusConectado();
+
+                            view.getCampoMensagem()
+                                    .requestFocus();
+                        });
+
+                    } catch (Exception erro) {
+
+                        logErro(
+                                "Erro ao processar pergunta.",
+                                erro
+                        );
+
+                        String mensagemErro =
+                                obterMensagemErro(erro);
+
+                        Platform.runLater(() -> {
+
+                            ChatMessage respostaErro =
+                                    new ChatMessage(
+                                            "Não consegui processar sua mensagem.\n\n"
+                                                    + mensagemErro,
+                                            false,
+                                            ChatMessage.Origem.LOCAL,
+                                            null
+                                    );
+
+                            view.adicionarMensagem(
+                                    respostaErro
+                            );
+
+                            conversaAtual.add(
+                                    respostaErro
+                            );
+
+                            view.getBotaoEnviar()
+                                    .setDisable(false);
+
+                            view.getBotaoRegenerar()
+                                    .setDisable(false);
+
+                            view.definirStatusConectado();
+
+                            view.getCampoMensagem()
+                                    .requestFocus();
+                        });
+                    }
+
+                });
 
         thread.setDaemon(true);
+        thread.setName("NeoChat-Resposta");
         thread.start();
     }
 
-    /**
-     * Salva a conversa atual no histórico (se tiver mensagens do usuário),
-     * limpa a tela e começa uma conversa nova.
+    private String obterMensagemErro(
+            Exception erro
+    ) {
+
+        if (erro.getMessage() == null
+                || erro.getMessage().isBlank()) {
+
+            return "Verifique sua conexão e a configuração da API.";
+        }
+
+        return erro.getMessage();
+    }
+
+    /*
+     * =========================================================
+     * NOVA CONVERSA
+     * =========================================================
      */
+
     public void iniciarNovaConversa() {
 
-        salvarConversaAtualNoHistorico();
+        try {
 
-        view.limparMensagens();
-        view.getCampoMensagem().clear();
-        view.definirStatusConectado();
+            salvarConversaAtualNoHistorico();
 
-        conversaAtual = new ArrayList<>();
-        mostrarBoasVindas();
+            view.limparMensagens();
+
+            view.getCampoMensagem().clear();
+
+            view.getBotaoEnviar()
+                    .setDisable(false);
+
+            view.getBotaoRegenerar()
+                    .setDisable(false);
+
+            view.definirStatusConectado();
+
+            conversaAtual =
+                    new ArrayList<>();
+
+            tituloJaDefinido = false;
+            ultimaPerguntaUsuario = null;
+
+            mostrarBoasVindas();
+
+            view.getCampoMensagem()
+                    .requestFocus();
+
+        } catch (Exception erro) {
+
+            logErro(
+                    "Erro ao iniciar nova conversa.",
+                    erro
+            );
+        }
     }
+
+    /*
+     * =========================================================
+     * HISTÓRICO
+     * =========================================================
+     */
 
     private void salvarConversaAtualNoHistorico() {
 
-        boolean temMensagemDoUsuario = conversaAtual.stream()
-                .anyMatch(ChatMessage::isDeUsuario);
+        try {
 
-        if (!temMensagemDoUsuario) {
-            return;
+            boolean temMensagemDoUsuario =
+                    conversaAtual.stream()
+                            .anyMatch(
+                                    ChatMessage::isDeUsuario
+                            );
+
+            if (!temMensagemDoUsuario) {
+                return;
+            }
+
+            String tituloItem =
+                    conversaAtual.stream()
+                            .filter(
+                                    ChatMessage::isDeUsuario
+                            )
+                            .findFirst()
+                            .map(
+                                    ChatController::resumir
+                            )
+                            .orElse(
+                                    "Conversa sem título"
+                            );
+
+            ConversaSalva conversaSalva =
+                    new ConversaSalva();
+
+            conversaSalva.setTitulo(
+                    tituloItem
+            );
+
+            conversaSalva.setMensagens(
+                    paraMensagensSalvas(
+                            conversaAtual
+                    )
+            );
+
+            historico.add(
+                    conversaSalva
+            );
+
+            persistirHistorico();
+
+            criarItemNaTela(
+                    conversaSalva
+            );
+
+        } catch (Exception erro) {
+
+            logErro(
+                    "Erro ao salvar conversa.",
+                    erro
+            );
         }
-
-        String tituloItem = conversaAtual.stream()
-                .filter(ChatMessage::isDeUsuario)
-                .findFirst()
-                .map(ChatController::resumir)
-                .orElse("Conversa sem título");
-
-        ConversaSalva conversaSalva = new ConversaSalva();
-        conversaSalva.setTitulo(tituloItem);
-        conversaSalva.setMensagens(paraMensagensSalvas(conversaAtual));
-
-        historico.add(conversaSalva);
-        persistirHistorico();
-
-        criarItemNaTela(conversaSalva);
     }
 
-    /**
-     * Cria a linha na barra lateral para uma conversa (nova ou restaurada
-     * do disco) e liga os botões de carregar, renomear e excluir.
-     */
-    private void criarItemNaTela(ConversaSalva conversaSalva) {
+    private void criarItemNaTela(
+            ConversaSalva conversaSalva
+    ) {
 
-        ChatView.ItemHistorico item = view.adicionarItemHistorico(conversaSalva.getTitulo());
+        try {
 
-        item.getBotaoCarregar().setOnAction(event -> carregarConversa(conversaSalva));
+            ChatView.ItemHistorico item =
+                    view.adicionarItemHistorico(
+                            conversaSalva.getTitulo()
+                    );
 
-        item.getBotaoRenomear().setOnAction(event -> {
-            TextInputDialog dialog = new TextInputDialog(conversaSalva.getTitulo());
-            dialog.setTitle("Renomear conversa");
-            dialog.setHeaderText(null);
-            dialog.setContentText("Novo nome:");
+            /*
+             * CARREGAR
+             */
+            item.getBotaoCarregar()
+                    .setOnAction(event ->
+                            carregarConversa(
+                                    conversaSalva
+                            )
+                    );
 
-            dialog.showAndWait().ifPresent(novoTitulo -> {
-                String limpo = novoTitulo.trim();
-                if (!limpo.isEmpty()) {
-                    conversaSalva.setTitulo(limpo);
-                    item.definirTitulo(limpo);
-                    persistirHistorico();
-                }
-            });
-        });
+            /*
+             * RENOMEAR
+             */
+            item.getBotaoRenomear()
+                    .setOnAction(event -> {
 
-        item.getBotaoExcluir().setOnAction(event -> {
-            Alert alerta = new Alert(Alert.AlertType.CONFIRMATION);
-            alerta.setTitle("Excluir conversa");
-            alerta.setHeaderText(null);
-            alerta.setContentText("Tem certeza que deseja excluir esta conversa do histórico?");
+                        try {
 
-            alerta.showAndWait().ifPresent(botao -> {
-                if (botao == ButtonType.OK) {
-                    historico.remove(conversaSalva);
-                    persistirHistorico();
-                    item.removerDaLista();
-                }
-            });
-        });
+                            TextInputDialog dialog =
+                                    new TextInputDialog(
+                                            conversaSalva.getTitulo()
+                                    );
+
+                            dialog.setTitle(
+                                    "Renomear conversa"
+                            );
+
+                            dialog.setHeaderText(null);
+
+                            dialog.setContentText(
+                                    "Novo nome:"
+                            );
+
+                            dialog.showAndWait()
+                                    .ifPresent(
+                                            novoTitulo -> {
+
+                                                String limpo =
+                                                        novoTitulo.trim();
+
+                                                if (!limpo.isEmpty()) {
+
+                                                    conversaSalva.setTitulo(
+                                                            limpo
+                                                    );
+
+                                                    item.definirTitulo(
+                                                            limpo
+                                                    );
+
+                                                    persistirHistorico();
+                                                }
+                                            }
+                                    );
+
+                        } catch (Exception erro) {
+
+                            logErro(
+                                    "Erro ao renomear conversa.",
+                                    erro
+                            );
+                        }
+                    });
+
+            /*
+             * EXCLUIR
+             */
+            item.getBotaoExcluir()
+                    .setOnAction(event -> {
+
+                        try {
+
+                            Alert alerta =
+                                    new Alert(
+                                            Alert.AlertType.CONFIRMATION
+                                    );
+
+                            alerta.setTitle(
+                                    "Excluir conversa"
+                            );
+
+                            alerta.setHeaderText(null);
+
+                            alerta.setContentText(
+                                    "Tem certeza que deseja excluir esta conversa do histórico?"
+                            );
+
+                            alerta.showAndWait()
+                                    .ifPresent(botao -> {
+
+                                        if (botao ==
+                                                ButtonType.OK) {
+
+                                            historico.remove(
+                                                    conversaSalva
+                                            );
+
+                                            persistirHistorico();
+
+                                            item.removerDaLista();
+                                        }
+                                    });
+
+                        } catch (Exception erro) {
+
+                            logErro(
+                                    "Erro ao excluir conversa.",
+                                    erro
+                            );
+                        }
+                    });
+
+        } catch (Exception erro) {
+
+            logErro(
+                    "Erro ao criar item do histórico.",
+                    erro
+            );
+        }
     }
 
-    private void carregarConversa(ConversaSalva conversaSalva) {
+    private void carregarConversa(
+            ConversaSalva conversaSalva
+    ) {
 
-        salvarConversaAtualNoHistorico();
+        try {
 
-        view.limparMensagens();
+            view.limparMensagens();
 
-        conversaAtual = paraChatMessages(conversaSalva.getMensagens());
-        tituloJaDefinido = true;
-        view.definirTituloConversaAtual(conversaSalva.getTitulo());
+            conversaAtual =
+                    paraChatMessages(
+                            conversaSalva.getMensagens()
+                    );
 
-        for (ChatMessage mensagem : conversaAtual) {
-            view.adicionarMensagem(mensagem);
+            tituloJaDefinido = true;
+
+            view.definirTituloConversaAtual(
+                    conversaSalva.getTitulo()
+            );
+
+            ultimaPerguntaUsuario =
+                    conversaAtual.stream()
+                            .filter(
+                                    ChatMessage::isDeUsuario
+                            )
+                            .reduce(
+                                    (primeira, segunda) ->
+                                            segunda
+                            )
+                            .map(
+                                    ChatMessage::getTexto
+                            )
+                            .orElse(null);
+
+            for (ChatMessage mensagem :
+                    conversaAtual) {
+
+                view.adicionarMensagem(
+                        mensagem
+                );
+            }
+
+            view.getBotaoEnviar()
+                    .setDisable(false);
+
+            view.getBotaoRegenerar()
+                    .setDisable(false);
+
+            view.definirStatusConectado();
+
+            view.getCampoMensagem()
+                    .requestFocus();
+
+        } catch (Exception erro) {
+
+            logErro(
+                    "Erro ao carregar conversa.",
+                    erro
+            );
         }
-
-        view.definirStatusConectado();
     }
 
     private void persistirHistorico() {
-        historicoService.salvar(historico);
+
+        try {
+
+            historicoService.salvar(
+                    historico
+            );
+
+        } catch (Exception erro) {
+
+            logErro(
+                    "Erro ao salvar histórico.",
+                    erro
+            );
+        }
     }
 
-    private static List<MensagemSalva> paraMensagensSalvas(List<ChatMessage> mensagens) {
+    /*
+     * =========================================================
+     * CONVERSÃO DO HISTÓRICO
+     * =========================================================
+     */
 
-        List<MensagemSalva> resultado = new ArrayList<>();
+    private static List<MensagemSalva>
+    paraMensagensSalvas(
+            List<ChatMessage> mensagens
+    ) {
+
+        List<MensagemSalva> resultado =
+                new ArrayList<>();
 
         for (ChatMessage m : mensagens) {
-            MensagemSalva ms = new MensagemSalva();
-            ms.setTexto(m.getTexto());
-            ms.setDeUsuario(m.isDeUsuario());
-            ms.setHorario(m.getHorarioFormatado());
-            ms.setOrigem(m.getOrigem() != null ? m.getOrigem().name() : null);
-            ms.setFonte(m.getFonte());
+
+            MensagemSalva ms =
+                    new MensagemSalva();
+
+            ms.setTexto(
+                    m.getTexto()
+            );
+
+            ms.setDeUsuario(
+                    m.isDeUsuario()
+            );
+
+            ms.setHorario(
+                    m.getHorarioFormatado()
+            );
+
+            ms.setOrigem(
+                    m.getOrigem() != null
+                            ? m.getOrigem().name()
+                            : null
+            );
+
+            ms.setFonte(
+                    m.getFonte()
+            );
+
             resultado.add(ms);
         }
 
         return resultado;
     }
 
-    private static List<ChatMessage> paraChatMessages(List<MensagemSalva> mensagens) {
+    private static List<ChatMessage>
+    paraChatMessages(
+            List<MensagemSalva> mensagens
+    ) {
 
-        List<ChatMessage> resultado = new ArrayList<>();
+        List<ChatMessage> resultado =
+                new ArrayList<>();
 
         for (MensagemSalva ms : mensagens) {
-            ChatMessage.Origem origem = ms.getOrigem() != null
-                    ? ChatMessage.Origem.valueOf(ms.getOrigem())
-                    : null;
 
-            resultado.add(new ChatMessage(
-                    ms.getTexto(), ms.isDeUsuario(), origem, ms.getFonte(), ms.getHorario()
-            ));
+            ChatMessage.Origem origem =
+                    ms.getOrigem() != null
+                            ? ChatMessage.Origem.valueOf(
+                            ms.getOrigem()
+                    )
+                            : null;
+
+            resultado.add(
+                    new ChatMessage(
+                            ms.getTexto(),
+                            ms.isDeUsuario(),
+                            origem,
+                            ms.getFonte(),
+                            ms.getHorario()
+                    )
+            );
         }
 
         return resultado;
     }
 
-    private static String resumir(ChatMessage mensagem) {
-        String texto = mensagem.getTexto().replace("\n", " ").trim();
-        return texto.length() > 28 ? texto.substring(0, 28) + "..." : texto;
+    /*
+     * =========================================================
+     * TÍTULO
+     * =========================================================
+     */
+
+    private static String resumir(
+            ChatMessage mensagem
+    ) {
+
+        String texto =
+                mensagem.getTexto()
+                        .replace("\n", " ")
+                        .trim();
+
+        return texto.length() > 28
+                ? texto.substring(0, 28) + "..."
+                : texto;
     }
 }
